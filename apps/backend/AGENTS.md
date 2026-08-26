@@ -216,7 +216,7 @@ Use Nest's `Logger` instead:
 private readonly logger = new Logger(ArticlesService.name);
 ```
 
-Never log secrets, tokens, or the service-role key.
+Never log secrets, tokens, or the Supabase secret key.
 
 ---
 
@@ -345,7 +345,7 @@ These must never be duplicated in a client:
 - Never log secrets or expose env variables
 - Validate all input via DTOs before it reaches a service
 - No hardcoded credentials
-- The **service-role key never leaves this service** — it is not exposed to the
+- The **Supabase secret key never leaves this service** — it is not exposed to the
   admin or the public site
 - Env vars are defined in `.env`, mirrored in `.env.example`, and read only through
   `config/` — never scattered `process.env` calls

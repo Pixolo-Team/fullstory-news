@@ -7,7 +7,8 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "lint": "eslint src",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:check": "node --env-file=.env scripts/check-connection.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.5",
