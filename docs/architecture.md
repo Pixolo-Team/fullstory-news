@@ -96,7 +96,7 @@ Supabase Auth ──session──▶ Admin
 ```
 
 The public site reads through the API rather than talking to Supabase directly,
-so the service-role key never leaves the server and read shaping (trending,
+so the Supabase secret key never leaves the server and read shaping (trending,
 similar Stories, search) lives in one place.
 
 ## Database and auth

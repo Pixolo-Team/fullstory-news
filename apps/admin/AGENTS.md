@@ -285,8 +285,8 @@ directories.
   to client components.
 - **Auth is enforced in middleware**, not per page. Unauthenticated requests to
   `(dashboard)` routes redirect to `/login`.
-- **The service-role key never reaches the browser.** Only `NEXT_PUBLIC_*` values
-  are client-visible - the Supabase URL and the anon key.
+- **The Supabase secret key never reaches the browser.** Only `NEXT_PUBLIC_*` values
+  are client-visible - the Supabase URL and the publishable key.
 - **Sanitise editor HTML on the server** before storing it in
   `articles.content_html`. Never at render time.
 - **Slugs** are generated from the headline and stay editable. Warn before
