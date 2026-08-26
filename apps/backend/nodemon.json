@@ -1,0 +1,7 @@
+{
+  "watch": ["dist"],
+  "ext": "js",
+  "delay": 1500,
+  "exec": "node --env-file=.env dist/main.js",
+  "quiet": true
+}
