@@ -1,0 +1,37 @@
+@import 'tailwindcss';
+
+/*
+ * Full Story design tokens — NEUTRAL PLACEHOLDERS.
+ *
+ * Client branding (logo, colours, fonts) has not been delivered yet.
+ * When it arrives, change the values here only. Components must reference
+ * tokens (e.g. text-ink, bg-paper, font-serif) and never hard-code a hex value.
+ */
+@theme {
+  /* Reading surface and text. Typography-first, minimal decoration. */
+  --color-paper: #ffffff;
+  --color-paper-muted: #f7f7f5;
+  --color-ink: #17171a;
+  --color-ink-muted: #5b5b63;
+  --color-rule: #e3e3df;
+
+  /* Single accent, used sparingly for links and active states. */
+  --color-accent: #1a4fd6;
+
+  /* Placeholder families. Swap for the client's licensed fonts. */
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Measure: story body should stay near 65–75 characters per line. */
+  --container-story: 42rem;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}

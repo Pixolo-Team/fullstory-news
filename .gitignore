@@ -141,3 +141,15 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Full Story
+.env
+.env.local
+.env.*.local
+.astro/
+.next/
+dist/
+build/
+.turbo/
+.vercel/
+.DS_Store

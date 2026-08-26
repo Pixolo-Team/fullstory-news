@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+/*
+ * Admin uses the same neutral tokens as the public site so client branding can
+ * be applied in one pass later. The admin may look more utilitarian than the
+ * public site — that is expected and fine.
+ */
+@theme {
+  --color-paper: #ffffff;
+  --color-paper-muted: #f7f7f5;
+  --color-ink: #17171a;
+  --color-ink-muted: #5b5b63;
+  --color-rule: #e3e3df;
+  --color-accent: #1a4fd6;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
