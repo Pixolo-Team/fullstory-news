@@ -8,15 +8,183 @@
 @theme {
   --color-paper: #ffffff;
   --color-paper-muted: #f7f7f5;
+  --color-paper-elevated: #fbfbf8;
   --color-ink: #17171a;
   --color-ink-muted: #5b5b63;
   --color-rule: #e3e3df;
   --color-accent: #1a4fd6;
+  --color-accent-soft: #e7eeff;
+  --color-danger: #a3231d;
+  --radius-md: 0.5rem;
+  --radius-xl: 0.875rem;
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+}
+
+:root {
+  --color-paper: #ffffff;
+  --color-paper-muted: #f7f7f5;
+  --color-paper-elevated: #fbfbf8;
+  --color-ink: #17171a;
+  --color-ink-muted: #5b5b63;
+  --color-rule: #e3e3df;
+  --color-accent: #1a4fd6;
+  --color-accent-soft: #e7eeff;
+  --color-danger: #a3231d;
+}
+
+html[data-theme='dark'] {
+  --color-paper: #121417;
+  --color-paper-muted: #0e1012;
+  --color-paper-elevated: #181c20;
+  --color-ink: #f4f4f0;
+  --color-ink-muted: #a5a7ae;
+  --color-rule: #2a2e34;
+  --color-accent: #8fb4ff;
+  --color-accent-soft: #172235;
+  --color-danger: #f08b85;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--color-paper-muted);
 }
 
 body {
+  margin: 0;
+  min-height: 100vh;
   background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-app-shell {
+  background:
+    radial-gradient(circle at top left, var(--color-accent-soft), transparent 28%),
+    linear-gradient(180deg, var(--color-paper-muted), var(--color-paper));
+}
+
+.admin-sidebar {
+  background:
+    linear-gradient(180deg, var(--color-paper), var(--color-paper-elevated));
+  overflow: hidden;
+}
+
+.admin-main-scroll {
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .admin-main-scroll {
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.admin-nav-link:hover {
+  background-color: color-mix(in srgb, var(--color-paper-muted) 60%, var(--color-paper));
+}
+
+/* Active item reads as a soft pill, the only fill in the sidebar. */
+.admin-nav-link-active,
+.admin-nav-link-active:hover {
+  background-color: var(--color-paper-muted);
+  color: var(--color-ink);
+}
+
+.admin-nav-link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.admin-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.admin-select {
+  appearance: none;
+  width: 100%;
+  height: 2.75rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 0.875rem;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  padding: 0 2.5rem 0 0.9rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.admin-select:focus {
+  border-color: var(--color-accent);
+}
+
+.admin-metric-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-soft-panel {
+  background-color: color-mix(in srgb, var(--color-paper-elevated) 82%, var(--color-paper));
+}
+
+.admin-kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+.admin-logout-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.625rem;
+  border: 1px solid var(--color-rule);
+  border-radius: 999px;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.admin-logout-button:hover {
+  background-color: var(--color-paper-muted);
 }
