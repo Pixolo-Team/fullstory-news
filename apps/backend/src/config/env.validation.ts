@@ -44,6 +44,19 @@ export class EnvironmentVariablesDto {
   @IsString()
   @IsOptional()
   DATABASE_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  SESSION_COOKIE_NAME?: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  SESSION_COOKIE_MAX_AGE_MS?: number;
+
+  @IsString()
+  @IsOptional()
+  SUPABASE_STORAGE_BUCKET?: string;
 }
 
 /**

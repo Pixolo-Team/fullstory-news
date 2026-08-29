@@ -1,5 +1,10 @@
 // CONFIG //
-import { createSupabaseClient, SUPABASE_CLIENT } from '@/config/supabase.config.js';
+import {
+  createSupabaseAuthClient,
+  createSupabaseClient,
+  SUPABASE_AUTH_CLIENT,
+  SUPABASE_CLIENT,
+} from '@/config/supabase.config.js';
 
 // LIBRARIES //
 import { Global, Module } from '@nestjs/common';
@@ -19,7 +24,12 @@ import { ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: createSupabaseClient,
     },
+    {
+      provide: SUPABASE_AUTH_CLIENT,
+      inject: [ConfigService],
+      useFactory: createSupabaseAuthClient,
+    },
   ],
-  exports: [SUPABASE_CLIENT],
+  exports: [SUPABASE_CLIENT, SUPABASE_AUTH_CLIENT],
 })
 export class SupabaseModule {}

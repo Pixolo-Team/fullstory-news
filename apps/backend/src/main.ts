@@ -17,7 +17,7 @@ import { DomainExceptionFilter } from '@/common/filters/domain-exception.filter.
 import { ResponseInterceptor } from '@/common/interceptors/response.interceptor.js';
 
 // LIBRARIES //
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { HttpStatus, Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -87,6 +87,8 @@ async function bootstrap(): Promise<void> {
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
+      // The API contract in docs/api.md reports validation failures as 422.
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
     }),
   );
 

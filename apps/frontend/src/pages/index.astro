@@ -1,19 +1,85 @@
 ---
-import '../styles/global.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import StoryCard from '@/components/StoryCard.astro';
+import StoryRow from '@/components/StoryRow.astro';
+import {
+  getArticlesByCategoryRequest,
+  getLatestArticlesRequest,
+  getTrendingArticlesRequest,
+} from '@/requests/get-articles.request';
+
+/** Story cards shown per Category block on the home page. */
+const CATEGORY_BLOCK_SIZE = 3;
+
+
+const [trending, latest, categoryGroups] = await Promise.all([
+  getTrendingArticlesRequest(3),
+  getLatestArticlesRequest(8),
+  getArticlesByCategoryRequest(CATEGORY_BLOCK_SIZE + 1),
+]);
+
+const hasAnything = trending.length > 0 || latest.length > 0 || categoryGroups.length > 0;
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Full Story</title>
-  </head>
-  <body>
-    <main>
-      <h1 class="font-serif text-2xl">Full Story</h1>
-      <p class="text-ink-muted">Public website. Not implemented yet.</p>
-      <p class="text-ink-muted">See docs/ for the planned pages.</p>
-    </main>
-  </body>
-</html>
+<BaseLayout
+  description="Simple journalism, reported daily and readable without an account."
+  title="Full Story"
+>
+  <div style="max-width:64rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-5)) var(--space-10)">
+    {
+      !hasAnything && (
+        <p class="text-body" style="margin:0;color:var(--color-muted)">
+          No Stories have been published yet.
+        </p>
+      )
+    }
+
+    {
+      trending.length > 0 && (
+        <section>
+          <SectionHeading label="Trending stories" />
+          <div data-grid="category" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-6);margin-top:var(--space-5)">
+            {trending.map((article) => (
+              <StoryCard article={article} size="large" />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      latest.length > 0 && (
+        <section style="margin-top:var(--space-9)">
+          <SectionHeading label="Latest stories" />
+          {latest.map((article) => (
+            <StoryRow article={article} />
+          ))}
+        </section>
+      )
+    }
+
+    {
+      categoryGroups.map((group) => {
+        // One extra Story was requested purely to answer "is there more?".
+        // Showing it would break the three-card row, so it is dropped here.
+        const hasMore = group.items.length > CATEGORY_BLOCK_SIZE;
+        const shown = group.items.slice(0, CATEGORY_BLOCK_SIZE);
+
+        return (
+          <section style="margin-top:var(--space-9)">
+            <SectionHeading
+              href={hasMore ? `/${group.category.slug}` : undefined}
+              label={group.category.name}
+            />
+            <div data-grid="category" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-5);margin-top:var(--space-5)">
+              {shown.map((article) => (
+                <StoryCard article={article} showSection={false} />
+              ))}
+            </div>
+          </section>
+        );
+      })
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,56 @@
+/* .remarque-prose — every typographic detail for long-form reading. */
+.remarque-prose{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg);max-width:var(--content-reading);font-variant-numeric:oldstyle-nums proportional-nums;text-wrap:pretty;hanging-punctuation:first last}
+.remarque-prose > * + *{margin-top:var(--space-5)}
+.remarque-prose > :first-child{margin-top:0}
+.remarque-prose h2{font-family:var(--font-display);font-size:var(--text-section);line-height:var(--leading-section);letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin-top:var(--space-7);margin-bottom:var(--space-3);color:var(--color-fg)}
+.remarque-prose h3{font-family:var(--font-body);font-size:var(--text-body-lg);line-height:var(--leading-title);font-weight:var(--weight-semibold);margin-top:var(--space-6);margin-bottom:var(--space-2);color:var(--color-fg)}
+.remarque-prose h4{font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-semibold);line-height:var(--leading-title);margin-top:var(--space-5);margin-bottom:var(--space-2);color:var(--color-fg)}
+.remarque-prose h5{font-family:var(--font-display);font-style:italic;font-size:var(--text-body);font-weight:var(--weight-medium);line-height:var(--leading-title);margin-top:var(--space-4);margin-bottom:var(--space-2);color:var(--color-fg)}
+.remarque-prose h6{font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);font-weight:var(--weight-semibold);line-height:var(--leading-meta);margin-top:var(--space-4);margin-bottom:var(--space-2);color:var(--color-muted)}
+.remarque-prose h2,.remarque-prose h3,.remarque-prose h4,.remarque-prose h5,.remarque-prose h6{text-wrap:balance;font-optical-sizing:auto;font-synthesis:none}
+.remarque-prose a{color:var(--color-link);text-decoration:underline;text-underline-offset:0.2em;text-decoration-thickness:1px;transition:color var(--motion-fast) var(--motion-easing)}
+.remarque-prose a:hover{color:var(--color-link-hover)}
+.remarque-prose strong{font-weight:var(--weight-semibold)}
+.remarque-prose em{font-style:italic}
+.remarque-prose blockquote{border-left:2px solid var(--color-border-bold);padding-left:var(--space-5);margin-left:0;color:var(--color-fg-muted);font-style:italic}
+.remarque-prose ul,.remarque-prose ol{padding-left:var(--space-5)}
+.remarque-prose li + li{margin-top:var(--space-2)}
+.remarque-prose code{font-family:var(--font-mono);font-size:0.9em;background-color:var(--color-code-bg);padding:0.15em 0.35em;border-radius:var(--radius-sm);color:var(--color-code-fg)}
+.remarque-prose pre{font-family:var(--font-mono);font-size:var(--text-meta);line-height:1.6;background-color:var(--color-code-bg);border:var(--border-width) var(--border-style) var(--color-border);border-radius:var(--radius-md);padding:var(--space-5);overflow-x:auto}
+.remarque-prose pre code{background:none;padding:0;border-radius:0;font-size:inherit}
+.remarque-prose hr{border:none;border-top:var(--border-width) var(--border-style) var(--color-border);margin:var(--space-8) 0}
+.remarque-prose img{max-width:100%;height:auto;border:var(--border-width) var(--border-style) var(--color-border);border-radius:var(--radius-sm)}
+.remarque-prose figcaption{font-family:var(--font-mono);font-size:var(--text-meta);line-height:var(--leading-meta);letter-spacing:var(--tracking-meta);color:var(--color-muted);margin-top:var(--space-2)}
+.remarque-prose .scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:var(--space-5)}
+.remarque-prose .scroll-wrap > table{margin-top:0}
+.remarque-prose table{width:100%;border-collapse:collapse;font-size:var(--text-body)}
+.remarque-prose caption{font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-muted);text-align:left;caption-side:top;margin-bottom:var(--space-2)}
+.remarque-prose th{font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);font-weight:var(--weight-semibold);text-align:left;padding:var(--space-2) var(--space-3);border-bottom:2px solid var(--color-border-bold);color:var(--color-fg)}
+.remarque-prose td{padding:var(--space-2) var(--space-3);border-bottom:var(--border-width) var(--border-style) var(--color-border);color:var(--color-fg)}
+.remarque-prose th.num,.remarque-prose td.num{font-variant-numeric:tabular-nums lining-nums;text-align:right}
+.remarque-prose dl{border-top:var(--border-width) var(--border-style) var(--color-border)}
+.remarque-prose dt{font-family:var(--font-display);font-style:italic;font-size:var(--text-body-lg);line-height:var(--leading-title);color:var(--color-fg);margin-top:var(--space-4)}
+.remarque-prose dt:first-child{margin-top:var(--space-4)}
+.remarque-prose dd{margin-left:0;margin-top:var(--space-1);padding-bottom:var(--space-4);color:var(--color-fg-muted);border-bottom:var(--border-width) var(--border-style) var(--color-border)}
+.remarque-prose kbd{font-family:var(--font-mono);font-size:0.85em;padding:0.1em 0.4em;border:var(--border-width) var(--border-style) var(--color-border);border-radius:var(--radius-sm);background-color:var(--color-surface);color:var(--color-fg)}
+.remarque-prose mark{background-color:var(--color-accent-subtle);color:var(--color-fg);padding:0.05em 0.2em;border-radius:var(--radius-sm)}
+.remarque-prose abbr[title]{text-decoration:underline dotted;text-underline-offset:0.2em;cursor:help}
+.remarque-prose sup,.remarque-prose sub{font-size:0.75em;line-height:0;position:relative;vertical-align:baseline}
+.remarque-prose sup{top:-0.5em}
+.remarque-prose sub{bottom:-0.25em}
+.remarque-prose details{border-top:var(--border-width) var(--border-style) var(--color-border);padding-top:var(--space-3);padding-bottom:var(--space-1)}
+.remarque-prose summary{font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-muted);cursor:pointer;list-style:none}
+.remarque-prose summary::-webkit-details-marker{display:none}
+.remarque-prose summary::before{content:"\25B8";display:inline-block;margin-right:var(--space-2);color:var(--color-muted);transition:transform var(--motion-fast) var(--motion-easing)}
+.remarque-prose details[open] summary::before{transform:rotate(90deg)}
+.remarque-prose details > :not(summary){margin-top:var(--space-3)}
+/* Drop cap — essay first paragraph only, opt-in, never accent-colored */
+.remarque-prose--dropcap > p:first-of-type:not(:has(> q:first-child)):not(:has(> code:first-child))::first-letter{font-family:var(--font-display);font-style:italic;font-size:3.5em;line-height:0.85;float:left;padding:0.08em 0.12em 0 0;color:var(--color-fg)}
+@supports (initial-letter: 4) or (-webkit-initial-letter: 4){
+  .remarque-prose--dropcap > p:first-of-type:not(:has(> q:first-child)):not(:has(> code:first-child))::first-letter{initial-letter:3.5;-webkit-initial-letter:3.5;float:none;padding:0 0.08em 0 0}
+}
+/* Pull quote — the article's own words as accent. At most one per screen. */
+.pullquote{font-family:var(--font-display);font-style:italic;font-size:var(--text-section);line-height:var(--leading-section);color:var(--color-fg);text-align:center;max-width:var(--content-reading);margin:var(--space-7) auto;padding:var(--space-4) 0;border-top:var(--border-width) var(--border-style) var(--color-border);border-bottom:var(--border-width) var(--border-style) var(--color-border)}
+/* The Remarque mark — a fleuron closing an essay. Punctuation, not content. */
+.remarque-endmark{text-align:center;margin-top:var(--space-7)}
+.remarque-endmark::after{content:"\2766";font-family:var(--font-display);font-size:var(--text-body);color:var(--color-muted)}

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { AdminDemoProvider } from '@/components/admin-demo-provider';
+import { ToastProvider } from '@/components/ui/toast';
 import './globals.css';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Full Story Admin',
@@ -20,7 +22,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-paper text-ink antialiased">
-        <AdminDemoProvider>{children}</AdminDemoProvider>
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

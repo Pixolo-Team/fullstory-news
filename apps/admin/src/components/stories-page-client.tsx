@@ -1,60 +1,88 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAdminDemoContext } from '@/components/admin-demo-provider';
+// TYPES //
+import type { ArticleData, PaginatedData } from '@/types/api.types';
+import type { FormEvent } from 'react';
+
+// SERVICES //
+import { deleteArticleAction } from '@/app/actions/article.actions';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { getStoryStatusVariantService } from '@/services/get-admin-demo-data.service';
+import { formatDateService } from '@/services/format-date.service';
+import { getArticleStatusVariantService } from '@/services/get-article-status-variant.service';
+import { useToast } from '@/components/ui/toast';
+
+// CONSTANTS //
+import { EMPTY_ACTION_RESULT } from '@/types/action-result.types';
+
+// LIBRARIES //
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useActionState, useEffect, useRef, useState } from 'react';
+
+interface StoriesPageClientProps {
+  articles: PaginatedData<ArticleData>;
+  searchQuery: string;
+  statusFilter: string;
+}
 
 /**
- * Renders Stories with working local add, edit, and delete actions.
+ * Renders the Story list.
+ *
+ * Filtering runs on the server through the URL, so a filtered view can be
+ * linked to, reloaded and paginated without losing state.
  */
-export function StoriesPageClient() {
+export function StoriesPageClient({ articles, searchQuery, statusFilter }: StoriesPageClientProps) {
   // Define Navigation
+  const router = useRouter();
 
   // Define Context
-  const { stories, deleteStory } = useAdminDemoContext();
+  const { showToast } = useToast();
 
   // Define Refs
+  const deleteFormRef = useRef<HTMLFormElement>(null);
 
   // Define States
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortOrder, setSortOrder] = useState<string>('latest');
+  const [searchInput, setSearchInput] = useState<string>(searchQuery);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleteState, submitDelete] = useActionState(deleteArticleAction, EMPTY_ACTION_RESULT);
 
   // Helper Functions
-  const publishedCount = stories.filter((story) => story.status === 'published').length;
-  const draftCount = stories.length - publishedCount;
-  const filteredStories = stories
-    .filter((story) => {
-      const normalizedQuery = searchQuery.trim().toLowerCase();
-      const matchesQuery =
-        normalizedQuery.length === 0 ||
-        story.headline.toLowerCase().includes(normalizedQuery) ||
-        story.slug.toLowerCase().includes(normalizedQuery) ||
-        story.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
-      const matchesStatus = statusFilter === 'all' || story.status === statusFilter;
+  const publishedCount = articles.items.filter((article) => article.status === 'published').length;
+  const draftCount = articles.items.length - publishedCount;
+  const pendingDeleteArticle =
+    articles.items.find((article) => article.id === pendingDeleteId) ?? null;
 
-      return matchesQuery && matchesStatus;
-    })
-    .sort((firstStory, secondStory) => {
-      if (sortOrder === 'views') {
-        return Number(secondStory.viewCount.replace(/,/g, '')) - Number(firstStory.viewCount.replace(/,/g, ''));
-      }
+  /**
+   * Pushes the current filters into the URL so the server refetches.
+   */
+  const applyFilters = (nextQuery: string, nextStatus: string): void => {
+    const searchParams = new URLSearchParams();
 
-      if (sortOrder === 'published') {
-        return (secondStory.publishedAt ?? '').localeCompare(firstStory.publishedAt ?? '');
-      }
+    if (nextQuery.trim()) {
+      searchParams.set('q', nextQuery.trim());
+    }
 
-      return secondStory.updatedAt.localeCompare(firstStory.updatedAt);
-    });
+    if (nextStatus !== 'all') {
+      searchParams.set('status', nextStatus);
+    }
+
+    const query = searchParams.toString();
+    router.push(query ? `/stories?${query}` : '/stories');
+  };
+
+  /**
+   * Applies the search box on submit.
+   */
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    event.preventDefault();
+    applyFilters(searchInput, statusFilter);
+  };
 
   /**
    * Opens the delete confirmation for a Story.
@@ -71,20 +99,28 @@ export function StoriesPageClient() {
   };
 
   /**
-   * Deletes the Story the confirmation is open for.
+   * Submits the hidden form so the delete runs as a server action.
    */
   const handleConfirmDeleteStory = (): void => {
-    if (!pendingDeleteId) {
-      return;
-    }
-
-    deleteStory(pendingDeleteId);
+    deleteFormRef.current?.requestSubmit();
     setPendingDeleteId(null);
   };
 
-  const pendingDeleteStory = stories.find((story) => story.id === pendingDeleteId) ?? null;
-
   // Use Effects
+  useEffect(() => {
+    if (deleteState.errorMessage) {
+      showToast({
+        title: 'Could not delete Story',
+        description: deleteState.errorMessage,
+        tone: 'error',
+      });
+    }
+
+    if (deleteState.successMessage) {
+      showToast({ title: deleteState.successMessage, tone: 'success' });
+    }
+  }, [deleteState, showToast]);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -93,33 +129,27 @@ export function StoriesPageClient() {
             <Button>New Story</Button>
           </Link>
         }
-        description="Review headline hierarchy, status labeling, and the actions editors need most often."
+        description="Every Story in the newsroom, with the actions editors need most often."
         title="Stories"
       />
 
       <section className="grid gap-4 lg:grid-cols-3">
         <Card className="admin-metric-card">
           <CardContent className="py-6">
-            <div>
-              <p className="admin-kicker">All Stories</p>
-              <p className="mt-2 text-4xl font-semibold tracking-tight text-ink">{stories.length}</p>
-            </div>
+            <p className="admin-kicker">All Stories</p>
+            <p className="mt-2 text-4xl font-semibold tracking-tight text-ink">{articles.total}</p>
           </CardContent>
         </Card>
         <Card className="admin-metric-card">
           <CardContent className="py-6">
-            <div>
-              <p className="admin-kicker">Published</p>
-              <p className="mt-2 text-4xl font-semibold tracking-tight text-ink">{publishedCount}</p>
-            </div>
+            <p className="admin-kicker">Published on this page</p>
+            <p className="mt-2 text-4xl font-semibold tracking-tight text-ink">{publishedCount}</p>
           </CardContent>
         </Card>
         <Card className="admin-metric-card">
           <CardContent className="py-6">
-            <div>
-              <p className="admin-kicker">Drafts</p>
-              <p className="mt-2 text-4xl font-semibold tracking-tight text-ink">{draftCount}</p>
-            </div>
+            <p className="admin-kicker">Drafts on this page</p>
+            <p className="mt-2 text-4xl font-semibold tracking-tight text-ink">{draftCount}</p>
           </CardContent>
         </Card>
       </section>
@@ -130,96 +160,119 @@ export function StoriesPageClient() {
             <p className="admin-kicker">Manage</p>
             <CardTitle>Story list</CardTitle>
             <CardDescription>
-              Filter controls are still visual-only, but create, edit, and delete now work on the dummy data.
+              Page {articles.page} of {Math.max(articles.totalPages, 1)}
             </CardDescription>
           </div>
           <div className="rounded-full border border-rule bg-paper-muted px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
-            {filteredStories.length} items
+            {articles.total} items
           </div>
         </CardHeader>
+
         <CardContent className="space-y-5">
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px_200px]">
-            <Input onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search by headline, slug, or tag" value={searchQuery} />
-            <Select onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}>
+          <form
+            className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_200px]"
+            onSubmit={handleSearchSubmit}
+          >
+            <Input
+              aria-label="Search Stories"
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search by headline or sub-headline"
+              value={searchInput}
+            />
+            <Select
+              aria-label="Filter by status"
+              onChange={(event) => applyFilters(searchInput, event.target.value)}
+              value={statusFilter}
+            >
               <option value="all">All statuses</option>
               <option value="published">Published</option>
               <option value="draft">Draft</option>
             </Select>
-            <Select onChange={(event) => setSortOrder(event.target.value)} value={sortOrder}>
-              <option value="latest">Latest update</option>
-              <option value="published">Published date</option>
-              <option value="views">Most viewed</option>
-            </Select>
-          </div>
+          </form>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full border-separate border-spacing-0">
-              <thead>
-                <tr className="text-left text-sm text-ink-muted">
-                  <th className="border-b border-rule px-4 py-3 font-medium">Story</th>
-                  <th className="border-b border-rule px-4 py-3 font-medium">Category</th>
-                  <th className="border-b border-rule px-4 py-3 font-medium">Status</th>
-                  <th className="border-b border-rule px-4 py-3 font-medium">Updated</th>
-                  <th className="border-b border-rule px-4 py-3 font-medium">Views</th>
-                  <th className="border-b border-rule px-4 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredStories.map((story) => (
-                  <tr className="align-top" key={story.id}>
-                    <td className="border-b border-rule px-4 py-5">
-                      <div className="space-y-1">
-                        <p className="text-base font-semibold text-ink">{story.headline}</p>
-                        <p className="max-w-2xl text-sm leading-6 text-ink-muted">{story.subHeadline}</p>
-                        <p className="text-xs uppercase tracking-[0.12em] text-ink-muted">/{story.slug}</p>
-                      </div>
-                    </td>
-                    <td className="border-b border-rule px-4 py-5 text-sm font-medium text-ink">
-                      {story.categoryName}
-                    </td>
-                    <td className="border-b border-rule px-4 py-5">
-                      <Badge variant={getStoryStatusVariantService(story.status)}>{story.status}</Badge>
-                    </td>
-                    <td className="border-b border-rule px-4 py-5 text-sm text-ink-muted">
-                      <p className="font-medium text-ink">{story.authorName}</p>
-                      <p>{story.updatedAt}</p>
-                    </td>
-                    <td className="border-b border-rule px-4 py-5">
-                      <div className="text-right">
-                        <p className="text-2xl font-semibold tracking-tight text-ink">{story.viewCount}</p>
-                        <p className="text-xs uppercase tracking-[0.14em] text-ink-muted">Views</p>
-                      </div>
-                    </td>
-                    <td className="border-b border-rule px-4 py-5">
-                      <div className="flex flex-wrap gap-2">
-                        <Link href={`/stories/${story.id}`}>
-                          <Button size="sm" variant="outline">
-                            Edit
-                          </Button>
-                        </Link>
-                        <Link href={`/stories/${story.id}/preview`}>
-                          <Button size="sm" variant="ghost">
-                            Preview
-                          </Button>
-                        </Link>
-                        <Button onClick={() => handleRequestDeleteStory(story.id)} size="sm" variant="ghost">
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
+          {articles.items.length === 0 ? (
+            <p className="py-10 text-center text-sm text-ink-muted">No Stories match this view.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-separate border-spacing-0">
+                <thead>
+                  <tr className="text-left text-sm text-ink-muted">
+                    <th className="border-b border-rule px-4 py-3 font-medium">Story</th>
+                    <th className="border-b border-rule px-4 py-3 font-medium">Category</th>
+                    <th className="border-b border-rule px-4 py-3 font-medium">Status</th>
+                    <th className="border-b border-rule px-4 py-3 font-medium">Updated</th>
+                    <th className="border-b border-rule px-4 py-3 font-medium">Views</th>
+                    <th className="w-px whitespace-nowrap border-b border-rule px-4 py-3 font-medium">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {articles.items.map((article) => (
+                    <tr className="align-top" key={article.id}>
+                      <td className="border-b border-rule px-4 py-5">
+                        <div className="space-y-1">
+                          <p className="text-base font-semibold text-ink">{article.headline}</p>
+                          <p className="max-w-2xl text-sm leading-6 text-ink-muted">
+                            {article.subHeadline}
+                          </p>
+                          <p className="text-xs uppercase tracking-[0.12em] text-ink-muted">
+                            /{article.slug}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="border-b border-rule px-4 py-5 text-sm font-medium text-ink">
+                        {article.category.name}
+                      </td>
+                      <td className="border-b border-rule px-4 py-5">
+                        <Badge variant={getArticleStatusVariantService(article.status)}>
+                          {article.status}
+                        </Badge>
+                      </td>
+                      <td className="border-b border-rule px-4 py-5 text-sm text-ink-muted">
+                        <p className="font-medium text-ink">{article.author.name}</p>
+                        <p>{formatDateService(article.updatedAt)}</p>
+                      </td>
+                      <td className="border-b border-rule px-4 py-5">
+                        <div className="text-right">
+                          <p className="text-2xl font-semibold tracking-tight text-ink">
+                            {article.viewCount.toLocaleString()}
+                          </p>
+                          <p className="text-xs uppercase tracking-[0.14em] text-ink-muted">Views</p>
+                        </div>
+                      </td>
+                      <td className="w-px whitespace-nowrap border-b border-rule px-4 py-5">
+                        <div className="flex flex-nowrap items-center gap-2">
+                          <Link href={`/stories/${article.id}`}>
+                            <Button size="sm" variant="outline">
+                              Edit
+                            </Button>
+                          </Link>
+                          <Button
+                            onClick={() => handleRequestDeleteStory(article.id)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      <form action={submitDelete} className="hidden" ref={deleteFormRef}>
+        <input name="id" type="hidden" value={pendingDeleteId ?? ''} readOnly />
+      </form>
 
       <ConfirmDialog
         confirmLabel="Delete Story"
         description={
-          pendingDeleteStory
-            ? `"${pendingDeleteStory.headline}" will be removed. This cannot be undone.`
+          pendingDeleteArticle
+            ? `"${pendingDeleteArticle.headline}" will be removed. This cannot be undone.`
             : ''
         }
         onCancel={handleCancelDeleteStory}

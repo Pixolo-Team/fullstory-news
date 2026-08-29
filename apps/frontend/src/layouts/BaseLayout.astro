@@ -1,0 +1,379 @@
+---
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { getCategoriesRequest } from '@/requests/get-categories.request';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+
+// Categories drive both the header nav and the footer, so they are fetched
+// once here rather than in each component.
+const categories = await getCategoriesRequest();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:type" content="website" />
+
+    <link rel="preconnect" href="/" />
+    <link rel="stylesheet" href="/ds/tokens/fonts.css" />
+    <link rel="stylesheet" href="/ds/tokens/core.css" />
+    <link rel="stylesheet" href="/ds/tokens/palette.css" />
+    <link rel="stylesheet" href="/ds/tokens/prose.css" />
+    <link rel="stylesheet" href="/ds/tokens/broadsheet.css" />
+    <link rel="stylesheet" href="/ds/tokens/essay.css" />
+    <link rel="stylesheet" href="/ds/tokens/forms.css" />
+    <link rel="stylesheet" href="/ds/tokens/chrome.css" />
+
+    <style is:global>
+      /* Full Story override of a core Remarque token.
+       *
+       * Remarque ships --text-meta at 14px. Datelines, section labels and every
+       * Story kicker read from it, and 14px mono small-caps was too quiet
+       * against 17px body copy. 16px is also above the small-text accessibility
+       * floor rather than exactly on it.
+       *
+       * Declared after the design system links so it wins the cascade, and kept
+       * here rather than edited into public/ds so a design system update does
+       * not silently revert it. */
+      :root {
+        --text-meta: 1rem;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--color-bg);
+        color: var(--color-fg);
+        font-family: var(--font-body);
+      }
+
+      a {
+        color: var(--color-link);
+      }
+
+      a:hover {
+        color: var(--color-link-hover);
+      }
+
+      .story-link {
+        color: var(--color-fg);
+        text-decoration: none;
+        transition: color var(--motion-fast) var(--motion-easing);
+      }
+
+      .story-link:hover {
+        color: var(--color-fg);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      /* Accent links: View all, tags, pagination, Instagram, Back to Home.
+         These were inline-styled, which beat the design system's a:hover
+         rule and left them with no hover state at all. */
+      .link-accent {
+        color: var(--color-accent);
+        text-decoration: none;
+        transition: color var(--motion-fast) var(--motion-easing);
+      }
+
+      .link-accent:hover {
+        color: var(--color-accent-hover);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      .link-muted {
+        color: var(--color-muted);
+        text-decoration: none;
+        transition: color var(--motion-fast) var(--motion-easing);
+      }
+
+      .link-muted:hover {
+        color: var(--color-fg);
+      }
+
+      /* Thumbnails read as clickable when the pointer is over them. */
+      [data-thumb] img {
+        transition: opacity var(--motion-fast) var(--motion-easing);
+      }
+
+      [data-thumb]:hover img {
+        opacity: 0.88;
+      }
+
+      /* Footer social icons. */
+      footer nav a[aria-label] {
+        transition: color var(--motion-fast) var(--motion-easing);
+      }
+
+      footer nav a[aria-label]:hover {
+        color: var(--color-fg) !important;
+      }
+
+      /* The masthead buttons are borderless on mobile, so hover needs a fill
+         rather than a border colour change. */
+      [data-nav-toggle]:hover,
+      #theme-toggle:hover {
+        background: var(--color-bg-subtle);
+      }
+
+      /* Listing rows collapse to a single column, thumbnail first. */
+      @media (max-width: 640px) {
+        [data-row='listing'] {
+          grid-template-columns: minmax(0, 1fr) !important;
+          gap: var(--space-4) !important;
+        }
+
+        [data-row='listing'] [data-thumb] {
+          order: -1;
+          width: 100%;
+        }
+
+        [data-story-title] {
+          font-size: 1.125rem !important;
+        }
+      }
+
+      /* Category blocks hold their three-column rhythm on desktop even when a
+         Category has fewer Stories, then collapse rather than squeeze. */
+      @media (max-width: 900px) {
+        [data-grid='category'] {
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+      }
+
+      @media (max-width: 560px) {
+        [data-grid='category'] {
+          grid-template-columns: minmax(0, 1fr) !important;
+        }
+      }
+
+      @media (max-width: 400px) {
+        [data-lede] {
+          font-size: var(--text-body) !important;
+        }
+      }
+
+      /* ── Mobile ─────────────────────────────────────────────────────────
+         Small caps at 16px mono collapse into each other without real
+         padding, and the masthead has four things competing for one row. */
+      /* The hamburger exists only on mobile; the desktop nav is always inline. */
+      [data-nav-toggle] {
+        display: none;
+      }
+
+      @media (max-width: 640px) {
+        [data-nav-toggle] {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 40px;
+          height: 40px;
+          min-width: 40px;
+          width: 40px;
+          padding: 0;
+          order: 1;
+          /* No chrome: the icon is the affordance. */
+          border: 0;
+          background: transparent;
+          color: var(--color-fg);
+        }
+
+        /* The open menu overlays the page instead of pushing it down. */
+        [data-nav-row] {
+          position: relative;
+        }
+
+        /* Search keeps its place on the right of the same row. */
+        [data-nav-row] > a[href='/search'] {
+          order: 2;
+        }
+
+        /* The menu drops below the row, full width, when opened. */
+        [data-primary-nav] {
+          display: none !important;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          z-index: var(--z-dropdown);
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0 !important;
+          overflow-x: visible;
+          padding: var(--space-2) clamp(var(--space-4), 4vw, var(--space-6));
+          background: var(--color-bg);
+          border-top: var(--border-width) solid var(--color-border);
+          border-bottom: var(--border-width) solid var(--color-border-bold);
+        }
+
+        [data-primary-nav][data-open='true'] {
+          display: flex !important;
+        }
+
+        [data-primary-nav] .nav-link {
+          padding-block: var(--space-3);
+          padding-inline: 0;
+          border-bottom: var(--border-width) solid var(--color-border);
+        }
+
+        [data-primary-nav] .nav-link:last-child {
+          border-bottom: 0;
+        }
+
+        [data-primary-nav] .nav-link {
+          justify-content: flex-start;
+          transition:
+            background-color var(--motion-fast) var(--motion-easing),
+            color var(--motion-fast) var(--motion-easing);
+        }
+
+        [data-primary-nav] .nav-link:hover,
+        [data-primary-nav] .nav-link:focus-visible {
+          background: var(--color-bg-subtle);
+          color: var(--color-fg);
+        }
+
+        header nav {
+          scrollbar-width: none;
+        }
+
+        header nav::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Tap targets, and space between category names. */
+        .nav-link {
+          padding-inline: var(--space-3);
+        }
+
+        /* The dateline wraps to its own line rather than crushing the brand. */
+        .remarque-masthead-dateline {
+          font-size: var(--text-micro);
+          justify-content: flex-start !important;
+          row-gap: var(--space-1);
+        }
+
+        /* One left edge for the strip: copyright and wordmark. */
+        [data-footer-bottom] {
+          flex-direction: column;
+          align-items: flex-start !important;
+          gap: var(--space-5) !important;
+        }
+
+        [data-footer-bottom] .text-meta {
+          text-wrap: pretty;
+        }
+      }
+
+      /* Page rhythm is tuned for a desktop column. On a phone, 96px above the
+         first heading and 128px below the last section is most of a screen
+         spent on nothing. */
+      @media (max-width: 640px) {
+        main > div {
+          padding-top: var(--space-6) !important;
+          padding-bottom: var(--space-8) !important;
+        }
+
+        /* Gaps between home page sections. */
+        main > div > section + section,
+        main > div > section:not(:first-child) {
+          margin-top: var(--space-7) !important;
+        }
+
+        /* The search field and its button fit on one row. */
+        main form[role='search'] {
+          flex-wrap: nowrap !important;
+        }
+      }
+
+      /* Story body and prose need the full width on a phone. */
+      @media (max-width: 560px) {
+        .remarque-prose,
+        .remarque-post-header {
+          max-width: 100% !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--color-bg);color:var(--color-fg)">
+      <Header categories={categories} />
+
+      <main style="flex:1 1 auto;width:100%">
+        <slot />
+      </main>
+
+      <Footer categories={categories} />
+    </div>
+
+    <script>
+      // Theme is a per-reader preference, restored before paint where possible
+      // and toggled from the masthead.
+      const STORAGE_KEY = 'fs-theme';
+
+      function applyTheme(theme: string): void {
+        document.documentElement.setAttribute('data-theme', theme);
+        syncToggleIcon(theme === 'dark');
+      }
+
+      // The icon shows the CURRENT theme: a sun while light, a moon while dark.
+      function syncToggleIcon(isDark: boolean): void {
+        const button = document.getElementById('theme-toggle');
+        if (!button) return;
+
+        button.setAttribute('aria-pressed', String(isDark));
+        const sun = button.querySelector<SVGElement>('[data-icon="sun"]');
+        const moon = button.querySelector<SVGElement>('[data-icon="moon"]');
+
+        if (sun) sun.style.display = isDark ? 'none' : '';
+        if (moon) moon.style.display = isDark ? '' : 'none';
+      }
+
+      function prefersDark(): boolean {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored === 'light' || stored === 'dark') {
+          applyTheme(stored);
+        } else {
+          syncToggleIcon(prefersDark());
+        }
+      } catch {
+        // Private browsing can throw on read; the OS preference still applies.
+        syncToggleIcon(prefersDark());
+      }
+
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const isDark = current === 'dark' || (!current && prefersDark());
+        const next = isDark ? 'light' : 'dark';
+        applyTheme(next);
+
+        try {
+          localStorage.setItem(STORAGE_KEY, next);
+        } catch {
+          // Preference simply will not persist.
+        }
+      });
+    </script>
+  </body>
+</html>

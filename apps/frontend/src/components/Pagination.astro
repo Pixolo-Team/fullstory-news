@@ -1,0 +1,58 @@
+---
+interface Props {
+  page: number;
+  totalPages: number;
+  basePath: string;
+  query?: string;
+}
+
+const { page, totalPages, basePath, query } = Astro.props;
+
+/** Builds a page URL, preserving any search term. */
+function pageHref(target: number): string {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (target > 1) params.set('page', String(target));
+  const suffix = params.toString();
+  return suffix ? `${basePath}?${suffix}` : basePath;
+}
+
+const pages = Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 5);
+---
+
+{
+  totalPages > 1 && (
+    <nav
+      aria-label="Pagination"
+      style="display:flex;justify-content:center;align-items:center;gap:var(--space-4);margin-top:var(--space-7);font-family:var(--font-mono);font-size:var(--text-meta);font-variant-numeric:tabular-nums lining-nums"
+    >
+      {page > 1 ? (
+        <a href={pageHref(page - 1)} class="link-accent">
+          ‹ Prev
+        </a>
+      ) : (
+        <span style="color:var(--color-muted)">‹ Prev</span>
+      )}
+
+      {pages.map((target) =>
+        target === page ? (
+          <span style="color:var(--color-fg)">{target}</span>
+        ) : (
+          <a href={pageHref(target)} class="link-muted">
+            {target}
+          </a>
+        ),
+      )}
+
+      {totalPages > 5 && <span style="color:var(--color-border-bold)">…</span>}
+
+      {page < totalPages ? (
+        <a href={pageHref(page + 1)} class="link-accent">
+          Next ›
+        </a>
+      ) : (
+        <span style="color:var(--color-muted)">Next ›</span>
+      )}
+    </nav>
+  )
+}

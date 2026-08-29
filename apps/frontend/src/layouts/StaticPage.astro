@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import type { StaticPageData } from '@/content/static-pages';
+
+interface Props {
+  page: StaticPageData;
+}
+
+const { page } = Astro.props;
+---
+
+<BaseLayout description={page.intro} title={`${page.title} — Full Story`}>
+  <div style="max-width:42rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-5)) var(--space-10)">
+    <h1 class="text-title" style="margin:0 0 var(--space-7)">{page.title}</h1>
+
+    <div class="remarque-prose">
+      <p>{page.intro}</p>
+      <Fragment set:html={page.contentHtml} />
+    </div>
+  </div>
+</BaseLayout>
