@@ -1,0 +1,74 @@
+---
+interface Props {
+  title: string;
+  url: string;
+}
+
+const { title, url } = Astro.props;
+
+const encodedUrl = encodeURIComponent(url);
+const encodedTitle = encodeURIComponent(title);
+---
+
+<div
+  style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-5)"
+  data-share
+  data-url={url}
+  data-title={title}
+>
+  <a
+    class="remarque-button"
+    href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
+    rel="noopener noreferrer"
+    style="white-space:nowrap;text-decoration:none"
+    target="_blank">WhatsApp</a
+  >
+  <a
+    class="remarque-button"
+    href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
+    rel="noopener noreferrer"
+    style="white-space:nowrap;text-decoration:none"
+    target="_blank">X</a
+  >
+  <a
+    class="remarque-button"
+    href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+    rel="noopener noreferrer"
+    style="white-space:nowrap;text-decoration:none"
+    target="_blank">Facebook</a
+  >
+  <button class="remarque-button" data-copy style="white-space:nowrap" type="button">Copy link</button>
+  <button class="remarque-button" data-native hidden style="white-space:nowrap" type="button">Share</button>
+</div>
+
+<script>
+  const container = document.querySelector<HTMLElement>('[data-share]');
+
+  if (container) {
+    const url = container.dataset.url ?? window.location.href;
+    const title = container.dataset.title ?? document.title;
+
+    const copyButton = container.querySelector<HTMLButtonElement>('[data-copy]');
+    copyButton?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(url);
+        copyButton.textContent = 'Copied';
+        setTimeout(() => (copyButton.textContent = 'Copy link'), 2000);
+      } catch {
+        copyButton.textContent = 'Press Ctrl+C';
+      }
+    });
+
+    // The native sheet is the better option on mobile, so it replaces the
+    // explicit buttons only where the browser actually supports it.
+    const nativeButton = container.querySelector<HTMLButtonElement>('[data-native]');
+    if (nativeButton && typeof navigator.share === 'function') {
+      nativeButton.hidden = false;
+      nativeButton.addEventListener('click', () => {
+        void navigator.share({ title, url }).catch(() => {
+          // The reader dismissed the sheet.
+        });
+      });
+    }
+  }
+</script>

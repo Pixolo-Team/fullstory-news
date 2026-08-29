@@ -1,93 +1,493 @@
-# Full Story — API Scope
+# Full Story — API
 
-Planned surface for `apps/backend` (NestJS). All routes are prefixed `/api`.
-**Only `GET /api/health` exists today** — the rest is scope, not implementation.
+Base path: `/api`. All requests and responses are `application/json` unless
+stated otherwise. Timestamps are ISO-8601 UTC.
 
-Resources are named `article`, matching the database. The public URL stays
-`/story/[slug]/[id]`. See the Terminology section in
-[architecture.md](./architecture.md).
+Resources are named `article`. The public URL is `/story/[slug]/[id]`.
 
-Public read endpoints are unauthenticated. Write endpoints require a Supabase
-session.
+---
 
-## Authentication
+## Frontend route map
 
-| Method | Route          | Purpose                  |
-| ------ | -------------- | ------------------------ |
-| POST   | `/auth/login`  | Email + password sign in |
-| POST   | `/auth/logout` | Clear session            |
-| GET    | `/auth/me`     | Current author profile   |
+This section is the contract for the Astro public site in `apps/frontend`.
+It maps each reader-facing route to the backend endpoints it depends on.
 
-## Categories
+| Frontend route | Page | API dependency |
+|---|---|---|
+| `/` | Home | `GET /categories`, `GET /articles/trending`, `GET /articles/latest`, `GET /articles/by-category` |
+| `/[category]` | Category listing | `GET /categories/:slug`, `GET /articles?category=<slug>&page=<n>&limit=<n>` |
+| `/story/[slug]/[id]` | Story | `GET /articles/:slug/:id`, `GET /articles/:id/similar`, `GET /categories` |
+| `/search` | Search | `GET /search?q=<query>&page=<n>&limit=<n>`, `GET /categories` |
+| `/privacy-policy` | Static page | no API |
+| `/terms` | Static page | no API |
+| `/grievance` | Static page | no API |
 
-| Method | Route               | Auth | Purpose      |
-| ------ | ------------------- | ---- | ------------ |
-| GET    | `/categories`       | -    | List all     |
-| GET    | `/categories/:slug` | -    | One Category |
-| POST   | `/categories`       | yes  | Create       |
-| PATCH  | `/categories/:id`   | yes  | Update       |
-| DELETE | `/categories/:id`   | yes  | Delete       |
+Reader-facing pages never require auth. Drafts must never appear in any public
+frontend response.
 
-## Articles
+### Astro page notes
 
-| Method | Route                     | Auth | Purpose                             |
-| ------ | ------------------------- | ---- | ----------------------------------- |
-| GET    | `/articles`               | -    | List, filtered and paginated        |
-| GET    | `/articles/:slug/:id`     | -    | One article (also records a view)   |
-| GET    | `/articles/trending`      | -    | Top views over the last 7 days      |
-| GET    | `/articles/latest`        | -    | Most recently published             |
-| GET    | `/articles/by-category`   | -    | Latest 3-4 per Category, for Home   |
-| GET    | `/articles/:id/similar`   | -    | Similar articles, for the Story page |
-| POST   | `/articles`               | yes  | Create                              |
-| PATCH  | `/articles/:id`           | yes  | Update, including publish/unpublish |
-| DELETE | `/articles/:id`           | yes  | Delete                              |
+- Header on every public page needs `GET /categories` for category navigation.
+- The local-time clock in the header is computed in the browser, not returned by the API.
+- Footer category links can reuse the same `GET /categories` response as the header.
+- Empty frontend sections are omitted rather than rendered with empty headings.
+- Search is request-time. If Astro remains static-first, the search UI needs a
+  client fetch against `GET /search`.
 
-`GET /articles` query parameters:
-
-```text
-category   category slug
-sort       latest | trending
-page       default 1
-limit      default 20
-status     draft | published   (admin only; public callers get published)
-```
-
-Notes:
-
-- Unauthenticated callers must never receive drafts.
-- Viewing an article inserts into `article_views` and increments
-  `articles.view_count`. Trending reads `article_views` over a 7-day window; the
-  two are not interchangeable.
-- Similar articles for the MVP: same Category, excluding the current article,
-  most recent first. Tag overlap can come later.
-
-## Search
-
-| Method | Route               | Purpose                                     |
-| ------ | ------------------- | ------------------------------------------- |
-| GET    | `/search?q=<query>` | Match headline, sub-headline, tags, content |
-
-Paginated with the same `page` / `limit` parameters. Implementation is an open
-decision — see [decisions.md](./decisions.md).
-
-## Static pages
-
-**No endpoints.** Privacy Policy, Terms & Conditions and Grievance are static
-content in the frontend codebase, not database rows.
-
-## Media
-
-| Method | Route           | Auth | Purpose            |
-| ------ | --------------- | ---- | ------------------ |
-| POST   | `/upload/image` | yes  | Upload, return URL |
-
-Returns a URL to store in `articles.hero_image_url` or inline in `content_html`.
-The backing store is an open decision; keep it behind this one endpoint so it can
-be swapped.
+---
 
 ## Conventions
 
-- Shared response shapes live in `packages/types`.
-- List endpoints return `{ items, page, limit, total, totalPages }`.
-- Timestamps are ISO-8601 UTC strings. The public site converts to the reader's
-  local timezone in the browser.
+### Headers
+
+| Header | Value | When |
+|---|---|---|
+| `Content-Type` | `application/json` | All requests with a body |
+| `Content-Type` | `multipart/form-data` | `POST /upload/image` only |
+| `Cookie` | `fs_session=<httpOnly>` | All authenticated requests |
+
+Auth is an httpOnly session cookie set by `POST /auth/login`. No bearer tokens.
+
+### Response envelope
+
+```json
+{
+  "data": null,
+  "status": "success",
+  "status_code": 200,
+  "message": "Request completed successfully",
+  "error": null
+}
+```
+
+`data` is null on error. `error` is null on success.
+
+### Pagination
+
+List endpoints return inside `data`:
+
+```json
+{ "items": [], "page": 1, "limit": 20, "total": 0, "totalPages": 0 }
+```
+
+| Param | Type | Default | Max |
+|---|---|---|---|
+| `page` | int | 1 | — |
+| `limit` | int | 20 | 100 |
+
+### Errors
+
+| Code | Meaning |
+|---|---|
+| 400 | Malformed request |
+| 401 | No session, or session expired |
+| 403 | Authenticated but not permitted |
+| 404 | Resource does not exist |
+| 409 | Conflict — duplicate slug, or category still in use |
+| 413 | Upload exceeds 5 MB |
+| 415 | Unsupported media type |
+| 422 | Validation failed |
+| 500 | Unexpected |
+| 503 | Supabase unreachable |
+
+---
+
+## 1. Auth
+
+### `POST /auth/login`
+
+Auth: none.
+
+```json
+{ "email": "editor@example.com", "password": "string" }
+```
+
+Response `data`:
+
+```json
+{ "id": "uuid", "name": "Amina Khan", "email": "editor@example.com", "avatarUrl": null }
+```
+
+Sets `fs_session` httpOnly cookie.
+
+Errors: `401` invalid credentials, `422` missing field.
+
+### `POST /auth/logout`
+
+Auth: session. No body. Clears the cookie. Returns `204`.
+
+### `GET /auth/me`
+
+Auth: session.
+
+Response `data`: same shape as login.
+
+Errors: `401`.
+
+---
+
+## 2. Categories
+
+### `GET /categories`
+
+Auth: none.
+
+Response `data`:
+
+```json
+[{ "id": "uuid", "name": "World", "slug": "world" }]
+```
+
+Frontend use:
+- Header category navigation on every public page
+- Footer category links
+- Optional category context on Story and Search layouts
+
+### `GET /categories/:slug`
+
+Auth: none.
+
+Response `data`: single category object.
+
+Errors: `404`.
+
+Frontend use:
+- Validates the Category page route
+- Supplies the page heading for `/[category]`
+
+### `GET /admin/categories`
+
+Auth: session.
+
+Response `data`:
+
+```json
+[{ "id": "uuid", "name": "World", "slug": "world",
+   "articleCount": 12, "createdAt": "...", "updatedAt": "..." }]
+```
+
+### `POST /categories`
+
+Auth: session.
+
+```json
+{ "name": "World", "slug": "world" }
+```
+
+`slug` optional — generated from `name` when omitted.
+
+Response `data`: created category. Status `201`.
+
+Errors: `409` duplicate name or slug, `422` empty name.
+
+### `PATCH /categories/:id`
+
+Auth: session. Body: any subset of `POST`.
+
+Errors: `404`, `409`, `422`.
+
+### `DELETE /categories/:id`
+
+Auth: session. Returns `204`.
+
+Errors: `404`, `409` when articles reference it —
+
+```json
+{ "data": null, "status": "error", "status_code": 409,
+  "message": "Category has 12 articles", "error": "CATEGORY_IN_USE" }
+```
+
+---
+
+## 3. Articles
+
+### `GET /articles`
+
+Auth: none. Session unlocks `status` and `q`.
+
+| Param | Type | Values | Auth |
+|---|---|---|---|
+| `category` | string | category slug | — |
+| `sort` | string | `latest` \| `published` \| `views` | — |
+| `status` | string | `draft` \| `published` \| `all` | session |
+| `q` | string | matches headline, sub-headline | session |
+| `page` | int | | — |
+| `limit` | int | | — |
+
+Without a session, `status` is forced to `published`.
+
+Response `data`: paginated `items` of —
+
+```json
+{
+  "id": "uuid",
+  "headline": "string",
+  "subHeadline": "string | null",
+  "slug": "string",
+  "status": "published",
+  "heroImageUrl": "string | null",
+  "tags": ["string"],
+  "viewCount": 14280,
+  "category": { "id": "uuid", "name": "Politics", "slug": "politics" },
+  "author": { "id": "uuid", "name": "Amina Khan" },
+  "publishedAt": "2026-08-27T16:30:00.000Z",
+  "updatedAt": "2026-08-27T18:10:00.000Z"
+}
+```
+
+`contentHtml` is not returned by list endpoints.
+
+Frontend use:
+- Category listing page: `GET /articles?category=<slug>&page=<n>&limit=<n>`
+- Public lists only use published content
+- Category listings show newest first unless a different public sort is later approved
+
+### `GET /articles/trending`
+
+Auth: none. Top `view_count` over the last 7 days, from `article_views`.
+
+| Param | Type | Default |
+|---|---|---|
+| `limit` | int | 3 |
+
+Response `data`: array of article list objects.
+
+Frontend use:
+- Home page `Trending Stories`
+- Default count is `3` to match the wireframe
+
+### `GET /articles/latest`
+
+Auth: none. Published, newest first.
+
+| Param | Type | Default |
+|---|---|---|
+| `limit` | int | 10 |
+
+Frontend use:
+- Home page `Latest Stories`
+- Default count is `10`, which fits the planned 8-10 item range
+
+### `GET /articles/by-category`
+
+Auth: none. Latest per category, for the home page.
+
+| Param | Type | Default |
+|---|---|---|
+| `limit` | int | 4 |
+
+Response `data`:
+
+```json
+[{ "category": { "id": "uuid", "name": "World", "slug": "world" },
+   "items": [] }]
+```
+
+Categories with no published articles are omitted.
+
+Frontend use:
+- Home page per-category sections
+- `items` should contain the same article list shape as other listing endpoints
+- Category order should follow the category source order, with empty categories omitted
+
+### `GET /articles/:slug/:id`
+
+Auth: none. Published only. Records a view.
+
+Response `data`: full article —
+
+```json
+{
+  "id": "uuid",
+  "headline": "string",
+  "subHeadline": "string | null",
+  "slug": "string",
+  "status": "published",
+  "heroImageUrl": "string | null",
+  "contentHtml": "<p>...</p>",
+  "tags": ["string"],
+  "viewCount": 14280,
+  "category": { "id": "uuid", "name": "Politics", "slug": "politics" },
+  "author": { "id": "uuid", "name": "Amina Khan", "avatarUrl": null },
+  "instagramPosts": [{ "id": "uuid", "instagramUrl": "https://...", "sortOrder": 0 }],
+  "publishedAt": "...",
+  "createdAt": "...",
+  "updatedAt": "..."
+}
+```
+
+Errors: `404`.
+
+Frontend use:
+- Main Story page payload
+- Must include enough data to render category label, byline, hero image, tags,
+  article body, and related Instagram URLs in one request
+- This request records a view and therefore must not be used for admin editing
+
+### `GET /articles/:id/similar`
+
+Auth: none. Same category, excludes the current article, newest first.
+
+| Param | Type | Default |
+|---|---|---|
+| `limit` | int | 3 |
+
+Response `data`: array of article list objects.
+
+Frontend use:
+- `Similar Stories` section on the Story page
+- Omit the whole section when the response is empty
+
+### `GET /articles/:id`
+
+Auth: session. Drafts included. Does **not** record a view.
+
+Response `data`: full article.
+
+Errors: `401`, `404`.
+
+### `POST /articles`
+
+Auth: session.
+
+```json
+{
+  "headline": "string",
+  "subHeadline": "string | null",
+  "slug": "string",
+  "categoryId": "uuid",
+  "heroImageUrl": "string | null",
+  "contentHtml": "<p>...</p>",
+  "tags": ["string"]
+}
+```
+
+| Field | Required | Notes |
+|---|---|---|
+| `headline` | yes | |
+| `categoryId` | yes | must exist |
+| `slug` | no | generated from `headline` when omitted |
+| `contentHtml` | no | sanitised on write |
+| `tags` | no | defaults `[]` |
+
+`authorId` and `status` are not accepted. Author comes from the session; every
+article is created as a draft.
+
+Response `data`: created article. Status `201`.
+
+Errors: `401`, `422` invalid `categoryId` or missing `headline`.
+
+### `PATCH /articles/:id`
+
+Auth: session. Any subset of `POST` fields, plus:
+
+```json
+{ "status": "draft | published" }
+```
+
+`published_at` is set on the first transition to `published` and never
+overwritten.
+
+Errors: `401`, `404`, `422`.
+
+### `DELETE /articles/:id`
+
+Auth: session. Returns `204`. Cascades to `article_views` and
+`article_instagram_post`.
+
+Errors: `401`, `404`.
+
+### `PUT /articles/:id/instagram`
+
+Auth: session. Replaces the full ordered list. Array position is `sort_order`.
+
+```json
+{ "urls": ["https://instagram.com/p/aaa", "https://instagram.com/p/bbb"] }
+```
+
+Response `data`: array of stored posts.
+
+Errors: `401`, `404`, `422` malformed URL.
+
+---
+
+## 4. Search
+
+### `GET /search`
+
+Auth: none. Published only.
+
+| Param | Type | Required |
+|---|---|---|
+| `q` | string | yes |
+| `page` | int | no |
+| `limit` | int | no |
+
+Matches headline, sub-headline, tags, `content_html`.
+
+Response `data`: paginated `items` of article list objects.
+
+Errors: `422` missing `q`.
+
+Frontend use:
+- `/search` page when the query is present
+- No-query state renders the search input only
+- No-results state renders a plain text empty state, not suggestions or fallback content
+
+---
+
+## 5. Media
+
+### `POST /upload/image`
+
+Auth: session. `Content-Type: multipart/form-data`.
+
+| Field | Type |
+|---|---|
+| `file` | binary |
+
+Limits: 5 MB. `image/jpeg`, `image/png`, `image/webp`.
+
+Response `data`:
+
+```json
+{ "url": "https://<project>.supabase.co/storage/v1/object/public/..." }
+```
+
+Errors: `401`, `413` too large, `415` unsupported type.
+
+---
+
+## 6. Dashboard
+
+### `GET /admin/stats`
+
+Auth: session.
+
+Response `data`:
+
+```json
+{ "totalArticles": 24, "publishedArticles": 18, "draftArticles": 6, "totalCategories": 4 }
+```
+
+---
+
+## 7. Health
+
+### `GET /health`
+
+Auth: none.
+
+```json
+{ "status": "ok", "service": "full-story-api", "uptimeSeconds": 1240,
+  "dependencies": [{ "name": "supabase", "reachable": true, "latencyMs": 12 }] }
+```
+
+`status` is `degraded` when any dependency is unreachable.
+
+---
+
+## Not implemented
+
+No endpoints for static pages. Privacy Policy, Terms and Grievance are static
+content in `apps/frontend`.

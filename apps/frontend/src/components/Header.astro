@@ -1,0 +1,260 @@
+---
+import type { CategoryData } from '@/types/api.types';
+import { getWeatherRequest } from '@/requests/get-weather.request';
+
+interface Props {
+  categories: CategoryData[];
+}
+
+const { categories } = Astro.props;
+
+const weather = await getWeatherRequest();
+---
+
+<header style="border-bottom:var(--border-width) solid var(--color-border);width:100%">
+  <div style="width:100%;padding:var(--space-5) clamp(var(--space-4),4vw,var(--space-6)) var(--space-4);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-4) var(--space-6)">
+    <a
+      href="/"
+      style="font-family:var(--font-display);font-size:1.875rem;line-height:1.1;letter-spacing:var(--tracking-title);color:var(--color-fg);text-decoration:none;font-variant-caps:all-small-caps"
+      >Full Story</a
+    >
+
+    <div style="display:flex;align-items:center;gap:var(--space-4)">
+      <p class="remarque-masthead-dateline" style="margin:0;justify-content:flex-end">
+        <span id="dateline-day"></span>
+        <span class="remarque-dot" aria-hidden="true">·</span>
+        <span id="dateline-time"></span>
+        {
+          weather && (
+            <>
+              <span class="remarque-dot" aria-hidden="true">
+                ·
+              </span>
+              <span id="dateline-city">{weather.city}</span>
+              <span class="remarque-dot" aria-hidden="true">
+                ·
+              </span>
+              <span id="dateline-temp">{weather.temperatureC}°C</span>
+            </>
+          )
+        }
+      </p>
+
+      <button
+        aria-label="Switch theme"
+        aria-pressed="false"
+        class="remarque-button"
+        id="theme-toggle"
+        style="min-height:32px;height:32px;min-width:32px;width:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;line-height:1"
+        title="Switch theme"
+        type="button"
+      >
+        <svg
+          aria-hidden="true"
+          data-icon="sun"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <circle cx="12" cy="12" r="4.2"></circle>
+          <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"></path>
+        </svg>
+        <svg
+          aria-hidden="true"
+          data-icon="moon"
+          fill="none"
+          height="16"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="display:none"
+          stroke-width="1.8"
+          viewBox="0 0 24 24"
+          width="16"
+        >
+          <path d="M20.5 14.6A8.6 8.6 0 1 1 9.4 3.5a7 7 0 0 0 11.1 11.1Z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div
+    data-nav-row
+    style="width:100%;border-top:var(--border-width) solid var(--color-border);padding:0 clamp(var(--space-4),4vw,var(--space-6)) var(--space-1);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-4)"
+  >
+    <button
+      aria-controls="primary-nav"
+      aria-expanded="false"
+      aria-label="Open menu"
+      class="remarque-button"
+      data-nav-toggle
+      id="nav-toggle"
+      type="button"
+    >
+      <svg
+        aria-hidden="true"
+        data-icon="open"
+        fill="none"
+        height="18"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.8"
+        viewBox="0 0 24 24"
+        width="18"
+      >
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+      <svg
+        aria-hidden="true"
+        data-icon="close"
+        fill="none"
+        height="18"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.8"
+        style="display:none"
+        viewBox="0 0 24 24"
+        width="18"
+      >
+        <path d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+
+    <nav data-primary-nav id="primary-nav" style="display:flex;gap:var(--space-2);overflow-x:auto">
+      <a
+        class="nav-link"
+        href="/"
+        style="white-space:nowrap;font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);font-size:var(--text-body)"
+        >Home</a
+      >
+      {
+        categories.map((category) => (
+          <a
+            class="nav-link"
+            href={`/${category.slug}`}
+            style="white-space:nowrap;font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);font-size:var(--text-body)"
+          >
+            {category.name}
+          </a>
+        ))
+      }
+    </nav>
+
+    <a
+      class="nav-link"
+      href="/search"
+      style="white-space:nowrap;font-family:var(--font-mono);font-size:var(--text-meta);display:inline-flex;align-items:center;gap:var(--space-2)"
+    >
+      <svg
+        aria-hidden="true"
+        fill="none"
+        height="15"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="2"
+        style="display:block"
+        viewBox="0 0 24 24"
+        width="15"
+      >
+        <circle cx="10.5" cy="10.5" r="6.5"></circle>
+        <path d="M15.5 15.5 21 21"></path>
+      </svg>
+      <span>Search</span>
+    </a>
+  </div>
+</header>
+
+<script>
+  // The dateline must show the reader's own day and time, so it is rendered in
+  // the browser rather than baked in at build time.
+  function renderDateline(): void {
+    const now = new Date();
+
+    const day = document.getElementById('dateline-day');
+    const time = document.getElementById('dateline-time');
+
+    if (day) {
+      day.textContent = new Intl.DateTimeFormat(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }).format(now);
+    }
+
+    if (time) {
+      time.textContent = new Intl.DateTimeFormat(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(now);
+    }
+  }
+
+  renderDateline();
+  setInterval(renderDateline, 30_000);
+
+  // Mobile menu. The nav stays in the DOM at every width; only its display
+  // changes, so there is one set of links and one source of truth.
+  const navToggle = document.getElementById('nav-toggle');
+  const primaryNav = document.getElementById('primary-nav');
+
+  navToggle?.addEventListener('click', () => {
+    const isOpen = primaryNav?.getAttribute('data-open') === 'true';
+    const nextOpen = !isOpen;
+
+    primaryNav?.setAttribute('data-open', String(nextOpen));
+    navToggle.setAttribute('aria-expanded', String(nextOpen));
+    navToggle.setAttribute('aria-label', nextOpen ? 'Close menu' : 'Open menu');
+
+    const open = navToggle.querySelector<SVGElement>('[data-icon="open"]');
+    const close = navToggle.querySelector<SVGElement>('[data-icon="close"]');
+    if (open) open.style.display = nextOpen ? 'none' : '';
+    if (close) close.style.display = nextOpen ? '' : 'none';
+  });
+
+  // Following a link should close the menu behind you.
+  primaryNav?.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).closest('a')) {
+      primaryNav.setAttribute('data-open', 'false');
+      navToggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // The server renders the newsroom's weather so the masthead is never empty.
+  // The browser then replaces it with the reader's own city.
+  //
+  // Location comes from an IP lookup, not the timezone: India is a single
+  // timezone, so Asia/Kolkata would show "Kolkata" to a reader in Mumbai.
+  // It is also not the Geolocation API - that prompts for permission before
+  // the reader has read anything, for a temperature.
+  async function renderLocalWeather(): Promise<void> {
+    const cityEl = document.getElementById('dateline-city');
+    const tempEl = document.getElementById('dateline-temp');
+    if (!cityEl || !tempEl) return;
+
+    try {
+      const locationResponse = await fetch('https://ipwho.is/?fields=city,latitude,longitude,success');
+      const place = await locationResponse.json();
+
+      if (!place?.success || typeof place.latitude !== 'number') return;
+
+      const weatherResponse = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m`,
+      );
+      const weather = await weatherResponse.json();
+      const temperature = weather?.current?.temperature_2m;
+
+      if (typeof temperature !== 'number') return;
+
+      if (place.city) cityEl.textContent = place.city;
+      tempEl.textContent = `${Math.round(temperature)}°C`;
+    } catch {
+      // Offline, blocked or rate limited - the newsroom reading stands.
+    }
+  }
+
+  void renderLocalWeather();
+</script>

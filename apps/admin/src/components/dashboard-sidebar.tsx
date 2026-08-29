@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { useAdminDemoContext } from '@/components/admin-demo-provider';
+import { logoutAction } from '@/app/actions/auth.actions';
 import {
   CloseIcon,
   GridIcon,
@@ -37,10 +37,8 @@ const NAVIGATION_GROUPS = [
 export function DashboardSidebar({ className = '' }: DashboardSidebarProps) {
   // Define Navigation
   const pathname = usePathname();
-  const router = useRouter();
 
   // Define Context
-  const { signOut } = useAdminDemoContext();
 
   // Define Refs
 
@@ -73,19 +71,11 @@ export function DashboardSidebar({ className = '' }: DashboardSidebarProps) {
     setIsMobileMenuOpen(false);
   };
 
-  /**
-   * Signs out of the local dummy admin and returns to login.
-   */
-  const handleLogout = (): void => {
-    signOut();
-    closeMobileMenu();
-    router.push('/login');
-  };
 
   // Use Effects
   return (
     <aside
-      className={`admin-sidebar border-b border-rule px-4 py-4 sm:px-5 sm:py-5 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:px-6 lg:py-6 ${className}`.trim()}
+      className={`admin-sidebar border-b border-rule px-4 py-4 sm:px-5 sm:py-5 lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r lg:px-4 lg:py-6 ${className}`.trim()}
     >
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <div className="space-y-1">
@@ -147,10 +137,12 @@ export function DashboardSidebar({ className = '' }: DashboardSidebarProps) {
           <div className="mt-6 flex flex-col gap-1 border-t border-rule pt-4 lg:mt-auto">
             <ThemeToggle />
 
-            <button className="admin-nav-link w-full" onClick={handleLogout} type="button">
-              <LogoutIcon className="h-5 w-5 shrink-0" />
-              <span>Logout</span>
-            </button>
+            <form action={logoutAction}>
+              <button className="admin-nav-link w-full" onClick={closeMobileMenu} type="submit">
+                <LogoutIcon className="h-5 w-5 shrink-0" />
+                <span>Logout</span>
+              </button>
+            </form>
           </div>
         </div>
       </div>

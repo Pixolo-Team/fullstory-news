@@ -7,6 +7,9 @@ export interface AppConfigData {
   nodeEnv: string;
   corsOrigins: string[];
   isProduction: boolean;
+  sessionCookieName: string;
+  sessionCookieMaxAgeMs: number;
+  storageBucket: string;
 }
 
 /**
@@ -26,5 +29,8 @@ export function buildAppConfig(configService: ConfigService): AppConfigData {
       .map((origin) => origin.trim())
       .filter((origin) => origin.length > 0),
     isProduction: nodeEnv === 'production',
+    sessionCookieName: configService.get<string>('SESSION_COOKIE_NAME') ?? 'fs_session',
+    sessionCookieMaxAgeMs: Number(configService.get<number>('SESSION_COOKIE_MAX_AGE_MS') ?? 604800000),
+    storageBucket: configService.get<string>('SUPABASE_STORAGE_BUCKET') ?? 'story-images',
   };
 }

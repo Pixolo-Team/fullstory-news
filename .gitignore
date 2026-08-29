@@ -156,3 +156,6 @@ build/
 
 # Lockfiles - not tracked by team decision
 package-lock.json
+
+# Seed session cookie - never commit
+apps/backend/seed/.cookies

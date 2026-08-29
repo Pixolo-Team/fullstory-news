@@ -1,0 +1,46 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Pagination from '@/components/Pagination.astro';
+import StoryRow from '@/components/StoryRow.astro';
+import { getArticlesRequest } from '@/requests/get-articles.request';
+import { getCategoriesRequest } from '@/requests/get-categories.request';
+
+const { category: slug } = Astro.params;
+const page = Number(Astro.url.searchParams.get('page') ?? '1');
+
+const categories = await getCategoriesRequest();
+const category = categories.find((item) => item.slug === slug);
+
+if (!category) {
+  return Astro.redirect('/404', 404);
+}
+
+const articles = await getArticlesRequest({ category: category.slug, page, limit: 10 });
+---
+
+<BaseLayout description={`Stories in ${category.name}`} title={`${category.name} — Full Story`}>
+  <div style="max-width:64rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-5)) var(--space-10)">
+    <h1 class="text-title" style="margin:0 0 var(--space-7)">{category.name}</h1>
+
+    {
+      articles.items.length === 0 ? (
+        <p class="text-body" style="margin:0;color:var(--color-muted)">
+          No Stories in this Category yet.
+        </p>
+      ) : (
+        <>
+          <div style="border-top:var(--border-width) solid var(--color-border-bold)">
+            {articles.items.map((article) => (
+              <StoryRow article={article} showAuthor />
+            ))}
+          </div>
+          <Pagination
+            basePath={`/${category.slug}`}
+            page={articles.page}
+            totalPages={articles.totalPages}
+          />
+        </>
+      )
+    }
+  </div>
+</BaseLayout>

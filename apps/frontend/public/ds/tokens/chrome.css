@@ -1,0 +1,13 @@
+/* Site chrome — nav, footer, copy button. From the demo site's globals.css. */
+.nav-link{font-family:var(--font-body);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-fg-muted);text-decoration:none;transition:color var(--motion-fast) var(--motion-easing);padding:0.25rem 0.5rem;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+.nav-link:hover{color:var(--color-fg)}
+.footer-link{font-family:var(--font-mono);font-size:var(--text-meta);color:var(--color-muted);text-decoration:none;transition:color var(--motion-fast) var(--motion-easing);padding:0.25rem 0.5rem;min-height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center}
+.footer-link:hover{color:var(--color-fg)}
+@media (forced-colors: active){.nav-link:hover,.footer-link:hover{text-decoration:underline}}
+.copy-btn{position:absolute;top:var(--space-2);right:var(--space-2);font-family:var(--font-mono);font-size:var(--text-micro);color:var(--color-muted);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:0.2rem 0.5rem;cursor:pointer;transition:color var(--motion-fast) var(--motion-easing),border-color var(--motion-fast) var(--motion-easing)}
+.copy-btn:hover{color:var(--color-fg);border-color:var(--color-border-bold)}
+/* Token-reference swatches are the one must-survive custom painting case */
+.remarque-color-swatch{forced-color-adjust:none}
+/* Links default to the accent (never browser blue) wherever prose isn't in play */
+a{color:var(--color-link)}
+a:hover{color:var(--color-link-hover)}

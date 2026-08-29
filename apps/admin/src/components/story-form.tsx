@@ -1,226 +1,280 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+// TYPES //
+import type { ArticleDetailData, CategoryData } from '@/types/api.types';
+
+// SERVICES //
+import { createArticleAction, updateArticleAction } from '@/app/actions/article.actions';
+import { useToast } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { getSlugPreviewService } from '@/services/get-admin-demo-data.service';
-import type { StoryEditorData, StoryStatusData } from '@/types/admin.types';
+import { formatDateService } from '@/services/format-date.service';
+
+// LIBRARIES //
+import Link from 'next/link';
+import { useActionState, useEffect, useRef, useState } from 'react';
+
+// CONSTANTS //
+import { EMPTY_ACTION_RESULT } from '@/types/action-result.types';
 
 interface StoryFormProps {
-  story: StoryEditorData;
+  article: ArticleDetailData | null;
+  categories: CategoryData[];
+  categoryErrorMessage?: string | null;
   title: string;
   description: string;
-  onSaveStory: (story: StoryEditorData, nextStatus: StoryStatusData) => void;
 }
 
-const CATEGORY_OPTIONS = ['World', 'Tech', 'Politics', 'Sports'];
-const AUTHOR_OPTIONS = ['Amina Khan', 'Rohan Shah', 'Sara Thomas', 'Daniel Roy'];
-
 /**
- * Renders the create/edit Story form using dummy data.
+ * Renders the create and edit Story form.
+ *
+ * Submits to a server action, so the field names below are the API contract.
  */
-export function StoryForm({ story, title, description, onSaveStory }: StoryFormProps) {
+export function StoryForm({
+  article,
+  categories,
+  categoryErrorMessage = null,
+  title,
+  description,
+}: StoryFormProps) {
   // Define Navigation
-  const router = useRouter();
 
   // Define Context
+  const { showToast } = useToast();
 
   // Define Refs
+  const statusInputRef = useRef<HTMLInputElement>(null);
 
   // Define States
-  const [headline, setHeadline] = useState<string>(story.headline);
-  const [subHeadline, setSubHeadline] = useState<string>(story.subHeadline);
-  const [slug, setSlug] = useState<string>(story.slug);
-  const [categoryName, setCategoryName] = useState<string>(story.categoryName);
-  const [authorName, setAuthorName] = useState<string>(story.authorName);
-  const [heroImageUrl, setHeroImageUrl] = useState<string>(story.heroImageUrl);
-  const [tagsText, setTagsText] = useState<string>(story.tagsText);
-  const [contentHtml, setContentHtml] = useState<string>(story.contentHtml);
+  const [slug, setSlug] = useState<string>(article?.slug ?? '');
+  const [actionState, submitArticle, isSubmitting] = useActionState(
+    article ? updateArticleAction : createArticleAction,
+    EMPTY_ACTION_RESULT,
+  );
 
   // Helper Functions
-  const isPublished = story.status === 'published';
+  const isEditing = article !== null;
+  const isPublished = article?.status === 'published';
+  const savedSlug = article?.slug ?? '';
+  const hasSlugChanged = isPublished && slug !== savedSlug;
+  const hasCategories = categories.length > 0;
+  const isSubmitDisabled = isSubmitting || (!isEditing && !hasCategories);
 
   /**
-   * Builds the latest Story payload from local form state.
+   * Writes the intended status into the form before it submits.
+   *
+   * A submit button's name/value is not reliably serialised into the FormData
+   * a server action receives, which silently dropped the status and left every
+   * save as a draft. Setting a hidden field on click is synchronous and always
+   * arrives.
    */
-  const getStoryPayload = (): StoryEditorData => ({
-    id: story.id,
-    headline,
-    subHeadline,
-    slug: slug.trim() || getSlugPreviewService(headline),
-    categoryName,
-    authorName,
-    heroImageUrl,
-    tagsText,
-    status: story.status,
-    publishedAt: story.publishedAt,
-    contentHtml,
-  });
-
-  /**
-   * Saves the Story as a draft.
-   */
-  const handleSaveDraft = (): void => {
-    onSaveStory(getStoryPayload(), 'draft');
-  };
-
-  /**
-   * Publishes the Story.
-   */
-  const handlePublishStory = (): void => {
-    onSaveStory(getStoryPayload(), 'published');
-  };
-
-  const isNewStory = story.id === 'new-story';
-
-  /**
-   * Opens a local preview for an existing saved Story.
-   */
-  const handlePreviewStory = (): void => {
-    router.push(`/stories/${story.id}/preview`);
+  const setSubmitStatus = (nextStatus: 'draft' | 'published'): void => {
+    if (statusInputRef.current) {
+      statusInputRef.current.value = nextStatus;
+    }
   };
 
   // Use Effects
+  useEffect(() => {
+    if (actionState.errorMessage) {
+      showToast({ title: 'Could not save', description: actionState.errorMessage, tone: 'error' });
+    }
+
+    if (actionState.successMessage) {
+      showToast({ title: actionState.successMessage, tone: 'success' });
+    }
+  }, [actionState, showToast]);
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-5 md:grid-cols-2">
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="headline">Headline</Label>
-              <Input id="headline" onChange={(event) => setHeadline(event.target.value)} placeholder="Enter the Story headline" value={headline} />
-            </div>
+    <form action={submitArticle}>
+      {isEditing ? <input name="id" type="hidden" value={article.id} readOnly /> : null}
+      <input defaultValue="published" name="status" ref={statusInputRef} type="hidden" />
 
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="sub-headline">Sub-headline</Label>
-              <Textarea
-                className="min-h-24"
-                id="sub-headline"
-                onChange={(event) => setSubHeadline(event.target.value)}
-                placeholder="Add supporting context beneath the headline"
-                value={subHeadline}
-              />
-            </div>
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <Card>
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
 
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
-              <Input id="slug" onChange={(event) => setSlug(event.target.value)} placeholder="story-slug" value={slug} />
-              {isPublished ? (
+          <CardContent className="space-y-6">
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="headline">Headline</Label>
+                <Input
+                  defaultValue={article?.headline ?? ''}
+                  id="headline"
+                  name="headline"
+                  placeholder="Enter the Story headline"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="sub-headline">Sub-headline</Label>
+                <Textarea
+                  className="min-h-24"
+                  defaultValue={article?.subHeadline ?? ''}
+                  id="sub-headline"
+                  name="subHeadline"
+                  placeholder="Add supporting context beneath the headline"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug</Label>
+                <Input
+                  id="slug"
+                  name="slug"
+                  onChange={(event) => setSlug(event.target.value)}
+                  placeholder="Generated from the headline when left empty"
+                  value={slug}
+                />
+                {hasSlugChanged ? (
+                  <p className="text-xs text-danger">
+                    This Story is published. Changing the slug breaks every existing link to
+                    /story/{savedSlug}/{article.id}.
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hero-image-url">Hero image URL</Label>
+                <Input
+                  defaultValue={article?.heroImageUrl ?? ''}
+                  id="hero-image-url"
+                  name="heroImageUrl"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  defaultValue={article?.category.id ?? categories[0]?.id ?? ''}
+                  disabled={!hasCategories}
+                  id="category"
+                  name="categoryId"
+                  required
+                >
+                  {!hasCategories ? (
+                    <option value="">Categories unavailable</option>
+                  ) : null}
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </Select>
+                {categoryErrorMessage ? (
+                  <p className="text-xs text-danger">
+                    Categories could not be loaded yet: {categoryErrorMessage}
+                  </p>
+                ) : null}
+                {!hasCategories ? (
+                  <p className="text-xs text-ink-muted">
+                    The form stays available, but saving is disabled until Categories can be loaded.
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tags">Tags</Label>
+                <Input
+                  defaultValue={article?.tags.join(', ') ?? ''}
+                  id="tags"
+                  name="tags"
+                  placeholder="climate, elections, transport"
+                />
+                <p className="text-xs text-ink-muted">Separate with commas.</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="instagram-urls">Related Instagram posts</Label>
+                <Textarea
+                  className="min-h-24 font-mono text-[13px]"
+                  defaultValue={
+                    article?.instagramPosts.map((post) => post.instagramUrl).join('\n') ?? ''
+                  }
+                  id="instagram-urls"
+                  name="instagramUrls"
+                  placeholder="https://instagram.com/p/..."
+                />
+                <p className="text-xs text-ink-muted">One URL per line. Order is preserved.</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="content-html">Story body</Label>
+                <Textarea
+                  className="min-h-72 font-mono text-[13px]"
+                  defaultValue={article?.contentHtml ?? ''}
+                  id="content-html"
+                  name="contentHtml"
+                  placeholder="<p>Write Story HTML here</p>"
+                />
                 <p className="text-xs text-ink-muted">
-                  Changing the slug of a published Story should trigger a warning because the public URL changes.
+                  HTML for now. The rich text editor is still an open decision.
                 </p>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="hero-image-url">Hero image URL</Label>
-              <Input
-                id="hero-image-url"
-                onChange={(event) => setHeroImageUrl(event.target.value)}
-                placeholder="https://images.example.com/story.jpg"
-                value={heroImageUrl}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select id="category" onChange={(event) => setCategoryName(event.target.value)} value={categoryName}>
-                {CATEGORY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="author">Author</Label>
-              <Select id="author" onChange={(event) => setAuthorName(event.target.value)} value={authorName}>
-                {AUTHOR_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </Select>
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="tags">Tags</Label>
-              <Input id="tags" onChange={(event) => setTagsText(event.target.value)} placeholder="climate, elections, transport" value={tagsText} />
-              <p className="text-xs text-ink-muted">
-                Comma-separated for now. Real validation can land when the API wiring begins.
-              </p>
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="content-html">Story body</Label>
-              <Textarea
-                className="min-h-72 font-mono text-[13px]"
-                id="content-html"
-                onChange={(event) => setContentHtml(event.target.value)}
-                placeholder="<p>Write Story HTML here</p>"
-                value={contentHtml}
-              />
-              <p className="text-xs text-ink-muted">
-                Temporary textarea placeholder until the rich text editor decision is closed.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Publishing</CardTitle>
-            <CardDescription>Separate draft and publish actions reflect the planned workflow.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1 text-sm text-ink-muted">
-              <p>
-                <span className="font-medium text-ink">Status:</span> {story.status}
-              </p>
-              <p>
-                <span className="font-medium text-ink">Published at:</span>{' '}
-                {story.publishedAt ?? 'Not published yet'}
-              </p>
-            </div>
-            <div className="grid gap-3">
-              <Button onClick={handleSaveDraft}>Save draft</Button>
-              <Button onClick={handlePublishStory} variant="outline">Publish Story</Button>
-              {isNewStory ? null : (
-                <Button onClick={handlePreviewStory} variant="ghost">Preview Story</Button>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Safety checks</CardTitle>
-            <CardDescription>Important rules we already know from the project brief.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-ink-muted">
-            <p>Public UI uses the word Story, while the database and backend use article.</p>
-            <p>Publishing should set `published_at` the first time only.</p>
-            <p>Deleting remains a confirmed action, not a single-click button.</p>
-            <Link className="text-accent underline-offset-4 hover:underline" href="/stories">
-              Back to Stories
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Publishing</CardTitle>
+              <CardDescription>Publish when it is ready. Drafts are never public.</CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div className="space-y-1 text-sm text-ink-muted">
+                <p>
+                  <span className="font-medium text-ink">Status:</span>{' '}
+                  {article?.status ?? 'draft'}
+                </p>
+                <p>
+                  <span className="font-medium text-ink">Published:</span>{' '}
+                  {article?.publishedAt ? formatDateService(article.publishedAt) : 'Not published'}
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <Button
+                  disabled={isSubmitDisabled}
+                  onClick={() => setSubmitStatus('published')}
+                  type="submit"
+                >
+                  {isSubmitting
+                    ? 'Saving...'
+                    : isPublished
+                      ? 'Update published Story'
+                      : 'Publish Story'}
+                </Button>
+                <Button
+                  disabled={isSubmitDisabled}
+                  onClick={() => setSubmitStatus('draft')}
+                  type="submit"
+                  variant="ghost"
+                >
+                  {isPublished ? 'Unpublish and save as draft' : 'Save draft'}
+                </Button>
+              </div>
+
+              <Link
+                className="block text-sm text-accent underline-offset-4 hover:underline"
+                href="/stories"
+              >
+                Back to Stories
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </form>
   );
 }

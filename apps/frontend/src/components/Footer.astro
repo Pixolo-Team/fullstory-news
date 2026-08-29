@@ -1,0 +1,125 @@
+---
+import type { CategoryData } from '@/types/api.types';
+
+interface Props {
+  categories: CategoryData[];
+}
+
+const { categories } = Astro.props;
+
+const year = new Date().getFullYear();
+
+// Placeholders until the client supplies real handles.
+const socialLinks = [
+  { name: 'X', href: '#' },
+  { name: 'Facebook', href: '#' },
+  { name: 'Instagram', href: '#' },
+  { name: 'WhatsApp', href: '#' },
+  { name: 'LinkedIn', href: '#' },
+];
+
+const iconStyle =
+  'color:var(--color-fg-muted);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px';
+---
+
+<footer style="border-top:var(--border-width) solid var(--color-border);margin-top:var(--space-9)">
+  <div style="max-width:64rem;margin:0 auto;padding:var(--space-8) clamp(var(--space-4),4vw,var(--space-5))">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--space-6) var(--space-8);align-items:start">
+      <div>
+        <p class="text-label" style="margin:0 0 var(--space-2)">Categories</p>
+        <nav style="display:flex;flex-direction:column;align-items:flex-start">
+          {
+            categories.map((category) => (
+              <a class="footer-link" href={`/${category.slug}`} style="padding-left:0">
+                {category.name}
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+
+      <div>
+        <p class="text-label" style="margin:0 0 var(--space-2)">Full Story</p>
+        <nav style="display:flex;flex-direction:column;align-items:flex-start">
+          <a class="footer-link" href="/privacy-policy" style="padding-left:0">Privacy Policy</a>
+          <a class="footer-link" href="/terms" style="padding-left:0">Terms &amp; Conditions</a>
+          <a class="footer-link" href="/grievance" style="padding-left:0">Grievance</a>
+        </nav>
+      </div>
+
+      <div style="grid-column:span 2;min-width:0">
+        <p class="text-label" style="margin:0 0 var(--space-3)">About</p>
+        <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0 0 var(--space-4);max-width:34rem;text-wrap:pretty">
+          Reported daily, corrected in public, and readable without an account. No newsletter, no
+          notifications, no personalised feed.
+        </p>
+
+        <nav style="display:flex;align-items:center;gap:var(--space-4);flex-wrap:nowrap">
+          <span class="text-label" style="white-space:nowrap">Follow</span>
+
+          <a aria-label="X" href={socialLinks[0]!.href} style={iconStyle} title="X">
+            <svg aria-hidden="true" fill="currentColor" height="18" viewBox="0 0 24 24" width="18">
+              <path
+                d="M17.5 3h3.2l-7 8 8.2 10h-6.4l-5-6.1L4.7 21H1.5l7.5-8.6L1.2 3h6.6l4.5 5.6L17.5 3Zm-1.1 16.1h1.8L7.7 4.8H5.8l10.6 14.3Z"
+              ></path>
+            </svg>
+          </a>
+
+          <a aria-label="Facebook" href={socialLinks[1]!.href} style={iconStyle} title="Facebook">
+            <svg aria-hidden="true" fill="currentColor" height="18" viewBox="0 0 24 24" width="18">
+              <path
+                d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6c-.3 0-1.3-.1-2.45-.1-2.4 0-4.05 1.5-4.05 4.2v2.2H7.5V13h2.7v8h3.3Z"
+              ></path>
+            </svg>
+          </a>
+
+          <a aria-label="Instagram" href={socialLinks[2]!.href} style={iconStyle} title="Instagram">
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-width="1.6"
+              viewBox="0 0 24 24"
+              width="18"
+            >
+              <rect height="17.6" rx="5" width="17.6" x="3.2" y="3.2"></rect>
+              <circle cx="12" cy="12" r="4.1"></circle>
+              <circle cx="17.2" cy="6.8" fill="currentColor" r="1.1" stroke="none"></circle>
+            </svg>
+          </a>
+
+          <a aria-label="WhatsApp" href={socialLinks[3]!.href} style={iconStyle} title="WhatsApp">
+            <svg aria-hidden="true" fill="currentColor" height="18" viewBox="0 0 24 24" width="18">
+              <path
+                d="M12 2.8a9.1 9.1 0 0 0-7.8 13.8L2.8 21.2l4.7-1.3A9.1 9.1 0 1 0 12 2.8Zm0 1.7a7.4 7.4 0 0 1 6.2 11.4l-.3.4.7 2.4-2.5-.7-.4.2A7.4 7.4 0 1 1 12 4.5Zm-3 3.6c-.2 0-.5.1-.7.4-.2.3-.8.8-.8 2s.85 2.3 1 2.5c.15.2 1.65 2.6 4.1 3.5 2 .8 2.4.65 2.85.6.45-.05 1.45-.6 1.65-1.15.2-.55.2-1.05.15-1.15-.05-.1-.2-.15-.45-.3l-1.55-.75c-.2-.1-.35-.1-.5.1l-.7.9c-.15.15-.25.2-.45.1a6 6 0 0 1-1.8-1.1 6.7 6.7 0 0 1-1.25-1.55c-.1-.2 0-.3.1-.4l.35-.45c.1-.15.15-.25.2-.4a.4.4 0 0 0 0-.4l-.7-1.7c-.2-.45-.4-.4-.5-.4h-.05Z"
+              ></path>
+            </svg>
+          </a>
+
+          <a aria-label="LinkedIn" href={socialLinks[4]!.href} style={iconStyle} title="LinkedIn">
+            <svg aria-hidden="true" fill="currentColor" height="18" viewBox="0 0 24 24" width="18">
+              <path
+                d="M4.6 8.9h3v11.3h-3V8.9Zm1.5-4.9a1.75 1.75 0 1 1 0 3.5 1.75 1.75 0 0 1 0-3.5Zm4.4 4.9h2.9v1.55h.05c.4-.75 1.4-1.55 2.9-1.55 3.1 0 3.65 2 3.65 4.65v6.65h-3v-5.9c0-1.4-.03-3.2-1.95-3.2-1.95 0-2.25 1.52-2.25 3.1v6h-3V8.9Z"
+              ></path>
+            </svg>
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <div data-footer-bottom style="margin-top:var(--space-7);padding-top:var(--space-5);border-top:var(--border-width) solid var(--color-border);display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--space-5)">
+      <div style="min-width:0">
+        <p class="text-meta" style="margin:0;font-size:0.875rem">
+          © {year} Full Story. All rights reserved.
+        </p>
+      </div>
+
+      <a
+        href="/"
+        style="font-family:var(--font-display);font-size:1.875rem;line-height:1.1;letter-spacing:var(--tracking-title);color:var(--color-fg);text-decoration:none;font-variant-caps:all-small-caps;white-space:nowrap"
+        >Full Story</a
+      >
+    </div>
+  </div>
+</footer>

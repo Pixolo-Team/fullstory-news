@@ -3,7 +3,13 @@ import { validateEnvironment } from '@/config/env.validation.js';
 import { SupabaseModule } from '@/config/supabase.module.js';
 
 // SERVICES //
+import { AdminModule } from '@/modules/admin/admin.module.js';
+import { ArticlesModule } from '@/modules/articles/articles.module.js';
+import { AuthModule } from '@/modules/auth/auth.module.js';
+import { CategoriesModule } from '@/modules/categories/categories.module.js';
 import { HealthModule } from '@/modules/health/health.module.js';
+import { MediaModule } from '@/modules/media/media.module.js';
+import { SearchModule } from '@/modules/search/search.module.js';
 
 // LIBRARIES //
 import { Module } from '@nestjs/common';
@@ -12,8 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 /**
  * Application root.
  *
- * Feature modules are added here as they are built. Planned, per docs/api.md:
- *   AuthModule, CategoriesModule, ArticlesModule, SearchModule, MediaModule
+ * Application root module wiring every built feature module.
  */
 @Module({
   imports: [
@@ -23,6 +28,12 @@ import { ConfigModule } from '@nestjs/config';
       validate: validateEnvironment,
     }),
     SupabaseModule,
+    AuthModule,
+    CategoriesModule,
+    ArticlesModule,
+    SearchModule,
+    AdminModule,
+    MediaModule,
     HealthModule,
   ],
 })

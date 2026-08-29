@@ -33,6 +33,9 @@ export function ConfirmDialog({
 
   // Define Refs
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  // Held in a ref so the open effect does not depend on the callback's
+  // identity: call sites pass inline arrows, which change every render.
+  const onCancelRef = useRef(onCancel);
 
   // Define States
 
@@ -40,15 +43,20 @@ export function ConfirmDialog({
 
   // Use Effects
   useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
+  useEffect(() => {
     if (!open) {
       return;
     }
 
     // Escape closes; focus lands on the confirm action so the dialog is usable
-    // from the keyboard alone.
+    // from the keyboard alone. Keyed on `open` only - re-running on every
+    // parent render would drag focus back off whatever the user had tabbed to.
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') {
-        onCancel();
+        onCancelRef.current();
       }
     };
 
@@ -56,7 +64,7 @@ export function ConfirmDialog({
     confirmButtonRef.current?.focus();
 
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, onCancel]);
+  }, [open]);
 
   if (!open) {
     return null;

@@ -1,0 +1,52 @@
+---
+import type { ArticleData } from '@/types/api.types';
+import { buildStoryPathService } from '@/services/build-story-path.service';
+import { formatDateService } from '@/services/format-date.service';
+
+interface Props {
+  article: ArticleData;
+  size?: 'large' | 'small';
+  showSection?: boolean;
+}
+
+const { article, size = 'small', showSection = true } = Astro.props;
+
+const href = buildStoryPathService(article);
+const titleSize =
+  size === 'large' ? 'clamp(1.3125rem,4.5vw,1.5rem)' : '1.1875rem';
+---
+
+<article style="display:flex;flex-direction:column;gap:var(--space-3)">
+  {
+    article.heroImageUrl && (
+      <a data-thumb href={href} style="display:block;text-decoration:none">
+        <img
+          alt=""
+          loading="lazy"
+          src={article.heroImageUrl}
+          style={`width:100%;aspect-ratio:${size === 'large' ? '16 / 10' : '3 / 2'};object-fit:cover;display:block;border:var(--border-width) solid var(--color-border);border-radius:var(--radius-sm)`}
+        />
+      </a>
+    )
+  }
+
+  <h3
+    style={`font-family:var(--font-display);font-size:${titleSize};line-height:1.2;letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin:0;text-wrap:balance`}
+  >
+    <a class="story-link" href={href}>{article.headline}</a>
+  </h3>
+
+  {
+    size === 'large' && article.subHeadline && (
+      <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0;text-wrap:pretty">
+        {article.subHeadline}
+      </p>
+    )
+  }
+
+  <p class="remarque-entry-kicker" style="margin:0">
+    {showSection && <span class="remarque-entry-section">{article.category.name}</span>}
+    {showSection && <span class="remarque-dot" aria-hidden="true">·</span>}
+    <span>{formatDateService(article.publishedAt)}</span>
+  </p>
+</article>
