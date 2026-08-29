@@ -1,0 +1,13 @@
+/* Remarque Design System — global entry point. Imports only.
+ * Order matters: fonts, then core tier, then palette tier, then modules.
+ * NOTE: upstream remarque ships prose/essay/broadsheet/forms as opt-in
+ * subpaths not included by tokens.css. Here they are all imported so
+ * consuming design work gets the full editorial vocabulary in one link. */
+@import './tokens/fonts.css';
+@import './tokens/core.css';
+@import './tokens/palette.css';
+@import './tokens/prose.css';
+@import './tokens/broadsheet.css';
+@import './tokens/essay.css';
+@import './tokens/forms.css';
+@import './tokens/chrome.css';

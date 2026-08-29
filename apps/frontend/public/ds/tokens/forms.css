@@ -1,0 +1,48 @@
+/* Form control primitives — native elements, no fake replacement widgets.
+ * data-state lives on .remarque-field; author aria-invalid alongside it. */
+.remarque-field{display:flex;flex-direction:column;gap:var(--space-2);max-width:var(--content-reading)}
+.remarque-field + .remarque-field{margin-top:var(--space-5)}
+.remarque-field-label{font-family:var(--font-mono);font-size:var(--text-meta);line-height:var(--leading-meta);font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);color:var(--color-muted)}
+.remarque-field-required{color:var(--color-accent)}
+.remarque-field-message{font-family:var(--font-mono);font-size:var(--text-meta);line-height:var(--leading-meta);letter-spacing:var(--tracking-meta);color:var(--color-muted);margin:0;text-wrap:pretty}
+.remarque-input{display:block;width:100%;min-height:44px;padding:var(--space-2) var(--space-3);font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-title);color:var(--color-fg);background-color:var(--color-bg);border:var(--border-width) var(--border-style) var(--color-border-bold);border-radius:var(--radius-sm);transition:border-color var(--motion-fast) var(--motion-easing)}
+textarea.remarque-input{min-height:6rem;resize:vertical}
+.remarque-input:hover{border-color:var(--color-fg-muted)}
+.remarque-input::placeholder{color:var(--color-muted);opacity:1}
+.remarque-input:disabled{color:var(--color-disabled);background-color:var(--color-bg-subtle);border-color:var(--color-border);cursor:not-allowed}
+/* accent-color is the entire recoloring mechanism — real native controls */
+.remarque-checkbox,.remarque-radio{display:inline-flex;align-items:center;gap:var(--space-2);min-height:44px;font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-title);color:var(--color-fg);cursor:pointer}
+.remarque-checkbox input,.remarque-radio input{accent-color:var(--color-accent);width:var(--space-5);height:var(--space-5);margin:0;flex-shrink:0}
+.remarque-checkbox:has(input:disabled),.remarque-radio:has(input:disabled){color:var(--color-disabled);cursor:not-allowed}
+.remarque-checkbox input:disabled,.remarque-radio input:disabled{cursor:not-allowed}
+/* Buttons are quiet by rule: bordered or text, never a solid fill.
+   --primary is the one sanctioned accent placement per viewport. */
+.remarque-button{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);min-height:44px;padding:var(--space-2) var(--space-4);font-family:var(--font-body);font-size:var(--text-body);font-weight:var(--weight-medium);line-height:var(--leading-title);color:var(--color-fg);background-color:transparent;border:var(--border-width) var(--border-style) var(--color-border-bold);border-radius:var(--radius-sm);cursor:pointer;transition:color var(--motion-fast) var(--motion-easing),border-color var(--motion-fast) var(--motion-easing),background-color var(--motion-fast) var(--motion-easing)}
+.remarque-button:hover:not(:disabled){border-color:var(--color-fg-muted);color:var(--color-fg)}
+.remarque-button--primary{color:var(--color-accent);border-color:var(--color-accent)}
+.remarque-button--primary:hover:not(:disabled){color:var(--color-accent-hover);border-color:var(--color-accent-hover);background-color:var(--color-accent-subtle)}
+.remarque-button:disabled{color:var(--color-disabled);border-color:var(--color-border);background-color:transparent;cursor:not-allowed}
+.remarque-field[data-state="error"] .remarque-input,.remarque-input[aria-invalid="true"]{border-color:var(--color-error)}
+.remarque-field[data-state="error"] .remarque-field-message{color:var(--color-error)}
+.remarque-field[data-state="success"] .remarque-input{border-color:var(--color-success)}
+.remarque-field[data-state="success"] .remarque-field-message{color:var(--color-success)}
+.remarque-field[data-state="warning"] .remarque-input{border-color:var(--color-warning)}
+.remarque-field[data-state="warning"] .remarque-field-message{color:var(--color-warning)}
+@supports selector(:user-invalid){.remarque-input:user-invalid{border-color:var(--color-error)}}
+@supports selector(:has(:user-invalid)){.remarque-field:has(.remarque-input:user-invalid) .remarque-field-label{color:var(--color-error)}}
+@supports selector(:has(:focus-visible)){.remarque-field:has(.remarque-input:focus-visible) .remarque-field-label{color:var(--color-fg)}}
+/* Forced colors: state must read as geometry, since color is discarded */
+@media (forced-colors: active){
+  .remarque-field[data-state="error"] .remarque-input,.remarque-input[aria-invalid="true"]{border-style:double;border-width:3px}
+  .remarque-field[data-state="warning"] .remarque-input{border-style:dashed;border-width:2px}
+  .remarque-field[data-state="success"] .remarque-input{border-style:solid;border-width:2px}
+  .remarque-field[data-state="error"] .remarque-field-message::before{content:"\2715\0020"}
+  .remarque-field[data-state="warning"] .remarque-field-message::before{content:"\26A0\0020"}
+  .remarque-field[data-state="success"] .remarque-field-message::before{content:"\2713\0020"}
+}
+.remarque-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.remarque-table{width:100%;border-collapse:collapse;font-size:var(--text-body)}
+.remarque-table caption{font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-muted);text-align:left;caption-side:top;margin-bottom:var(--space-2)}
+.remarque-table th{font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);font-weight:var(--weight-semibold);text-align:left;padding:var(--space-2) var(--space-3);border-bottom:2px solid var(--color-border-bold);color:var(--color-fg)}
+.remarque-table td{font-family:var(--font-body);font-size:var(--text-body);padding:var(--space-2) var(--space-3);border-bottom:var(--border-width) var(--border-style) var(--color-border);color:var(--color-fg)}
+.remarque-table th.num,.remarque-table td.num{font-variant-numeric:tabular-nums lining-nums;text-align:right}

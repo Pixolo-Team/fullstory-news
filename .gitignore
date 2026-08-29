@@ -153,3 +153,9 @@ build/
 .turbo/
 .vercel/
 .DS_Store
+
+# Lockfiles - not tracked by team decision
+package-lock.json
+
+# Seed session cookie - never commit
+apps/backend/seed/.cookies

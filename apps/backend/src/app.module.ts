@@ -1,17 +1,40 @@
+// CONFIG //
+import { validateEnvironment } from '@/config/env.validation.js';
+import { SupabaseModule } from '@/config/supabase.module.js';
+
+// SERVICES //
+import { AdminModule } from '@/modules/admin/admin.module.js';
+import { ArticlesModule } from '@/modules/articles/articles.module.js';
+import { AuthModule } from '@/modules/auth/auth.module.js';
+import { CategoriesModule } from '@/modules/categories/categories.module.js';
+import { HealthModule } from '@/modules/health/health.module.js';
+import { MediaModule } from '@/modules/media/media.module.js';
+import { SearchModule } from '@/modules/search/search.module.js';
+
+// LIBRARIES //
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { HealthController } from './health/health.controller';
 
-/*
- * Feature modules are added here as they are built. The planned surface is
- * documented in docs/api.md:
- *   AuthModule, CategoriesModule, StoriesModule, SearchModule,
- *   StaticPagesModule, MediaModule
+/**
+ * Application root.
  *
- * Nothing beyond health is implemented yet — this is repository setup.
+ * Application root module wiring every built feature module.
  */
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true })],
-  controllers: [HealthController],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      validate: validateEnvironment,
+    }),
+    SupabaseModule,
+    AuthModule,
+    CategoriesModule,
+    ArticlesModule,
+    SearchModule,
+    AdminModule,
+    MediaModule,
+    HealthModule,
+  ],
 })
 export class AppModule {}

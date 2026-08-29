@@ -14,14 +14,16 @@ Decisions are recorded here rather than made silently in code. Anything marked
 | 5  | Static page content        | **Decided** — in the codebase, not the database |
 | 6  | Design system              | **Open** — shadcn/ui leading          |
 | 7  | Rich text editor           | **Open**                              |
-| 8  | Image / media storage      | **Open** — Supabase Storage preferred |
-| 9  | Search implementation      | **Open** — basic for the MVP          |
+| 8  | Image / media storage      | **Decided** — Supabase Storage        |
+| 9  | Search implementation      | **Decided** — Postgres `ILIKE`        |
 | 10 | Instagram integration      | **Open** — manual URLs preferred      |
 | 11 | Backend deployment         | **Open**                              |
 | 12 | SEO scope                  | **Open**                              |
 | 13 | Client branding            | **Blocked** — awaiting assets         |
 | 14 | Backend coding standard    | **Decided** — NestJS standard, own rule set |
 | 15 | Code-review path routing   | **Open** — paths are inverted        |
+| 16 | Unpublish vs published_at  | **Decided** — clear `published_at` on unpublish |
+| 17 | Category ordering          | **Open** — no sort_order column       |
 
 ---
 
@@ -143,35 +145,30 @@ stored, and treat `content_html` as trusted only because of that.
 
 ---
 
-## 8. Image / media storage — Open (Supabase Storage preferred)
+## 8. Image / media storage — Decided: Supabase Storage
 
-| Option | Notes |
-| ------ | ----- |
-| **Supabase Storage** | Already the DB and auth vendor. One account, one set of keys. Preferred for the MVP. |
-| **Cloudinary** | Better on-the-fly transforms and CDN; a second vendor to manage and pay for. |
-| **S3** | Most control, most setup. |
+**Decision:** Supabase Storage.
 
-Whatever is chosen, the database stores **URLs only** — never binary data. Put
-uploads behind a single `POST /upload/image` endpoint so the backing store can be
-swapped without touching the admin or the public site.
+**Reasoning:** It keeps database, auth and media under one vendor for the MVP,
+which is the smallest operational footprint. The admin and public site still
+store URLs only, so the storage backend can be swapped later behind the single
+`POST /upload/image` endpoint if usage outgrows this choice.
 
 ---
 
-## 9. Search implementation — Open (basic for the MVP)
+## 9. Search implementation — Decided: Postgres `ILIKE`
 
 Scope: match headline, sub-headline, tags and article content. Nothing advanced.
 
-| Option | Notes |
-| ------ | ----- |
-| **Postgres `ILIKE`** | Simplest. Fine at MVP content volumes. No ranking. |
-| **Postgres full-text search** | `tsvector` + GIN index. Still just Postgres, gives ranking and stemming. Modest extra work. |
-| **External service** (Meilisearch, Algolia) | Out of scope for the MVP. |
+**Decision:** Postgres `ILIKE`.
 
-**Leaning:** Postgres full-text search — it costs little more than `ILIKE` and
-avoids a rewrite as content grows.
+**Reasoning:** The content volume is still MVP-sized and the brief explicitly
+favours simple over speculative. `ILIKE` keeps the search endpoint easy to read
+and cheap to ship now.
 
-**Open sub-question:** the Astro search page needs request-time results. Either
-fetch from the client, or add an SSR adapter for that route.
+**Consequence:** search is intentionally basic. It matches headline,
+sub-headline and stored article HTML text, and can be upgraded later without
+changing the frontend route contract.
 
 ---
 
@@ -274,3 +271,47 @@ note does not help a tool that routes by path.
 3. Rely on the `AGENTS.md` notes and reviewer judgement.
 
 Option 1 is the real fix.
+
+---
+
+## 16. Unpublishing vs the `published_at` constraint — Decided: clear `published_at`
+
+The database currently enforces:
+
+```sql
+constraint articles_published_at_matches_status check (
+  (status = 'published' and published_at is not null)
+  or (status = 'draft' and published_at is null)
+)
+```
+
+**Decision:** keep the constraint and clear `published_at` when a Story moves
+back to draft.
+
+**Reasoning:** This avoids a schema migration while keeping the database rule
+truthful: drafts do not carry a publication timestamp. The admin UI and API now
+share one predictable behaviour instead of silently violating the constraint.
+
+**Consequence:** re-publishing after an unpublish stamps a new `published_at`.
+If preserving the first publication date becomes editorially important later,
+the right follow-up is a dedicated `first_published_at` column.
+
+---
+
+## 17. Category ordering — Open
+
+`categories` has no `sort_order` column, so the API can only order by name or
+by insertion. Neither reproduces the intended navigation order:
+
+```text
+World, Tech, Politics, Sports
+```
+
+**Options:**
+
+1. Add `sort_order int not null default 0` and an admin control for it.
+2. Hard-code the order in the frontend and accept that the admin cannot
+   change it.
+
+Option 2 is the MVP answer; option 1 is correct once the client wants to
+reorder without a deploy.

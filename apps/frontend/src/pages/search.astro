@@ -1,0 +1,149 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Pagination from '@/components/Pagination.astro';
+import { buildStoryPathService } from '@/services/build-story-path.service';
+import { formatDateService } from '@/services/format-date.service';
+import { searchArticlesRequest } from '@/requests/search-articles.request';
+import { getLatestArticlesRequest } from '@/requests/get-articles.request';
+
+const query = Astro.url.searchParams.get('q')?.trim() ?? '';
+const page = Number(Astro.url.searchParams.get('page') ?? '1');
+
+// With no query the page still has something to offer: the most recent
+// Stories, newest first. Searching replaces them with matches.
+const results = query ? await searchArticlesRequest(query, page) : null;
+const recent = query ? [] : await getLatestArticlesRequest(10);
+
+// Typographic quotes, matching the design. The mono meta face renders the
+// straight ASCII pair as two vertical ticks, which reads as code.
+const resultLine = results
+  ? `${results.total} ${results.total === 1 ? 'result' : 'results'} for “${query}”`
+  : '';
+---
+
+<BaseLayout description="Search Full Story" title="Search — Full Story">
+  <div style="max-width:64rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-5)) var(--space-10)">
+    <h1 class="text-title" style="margin:0 0 var(--space-6)">Search</h1>
+
+    <form
+      action="/search"
+      method="get"
+      role="search"
+      style="display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center"
+    >
+      <input
+        aria-label="Search Stories"
+        class="remarque-input"
+        name="q"
+        placeholder="Search Stories"
+        style="flex:1 1 18rem;min-width:0"
+        type="search"
+        value={query}
+      />
+      <button class="remarque-button" data-variant="primary" style="height:44px" type="submit">
+        Search
+      </button>
+    </form>
+
+    {
+      !query && recent.length > 0 && (
+        <>
+          <p class="text-label" style="margin:var(--space-7) 0 var(--space-1)">
+            Recent stories
+          </p>
+
+          <div style="border-top:var(--border-width) solid var(--color-border-bold)">
+            {recent.map((article) => (
+              <article style="padding:var(--space-5) 0;border-bottom:var(--border-width) solid var(--color-border);display:flex;flex-direction:column;gap:var(--space-2)">
+                <h3
+                  data-story-title
+                  style="font-family:var(--font-display);font-size:1.3125rem;line-height:1.25;letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin:0;text-wrap:balance"
+                >
+                  <a class="story-link" href={buildStoryPathService(article)}>
+                    {article.headline}
+                  </a>
+                </h3>
+
+                {article.subHeadline && (
+                  <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0;text-wrap:pretty">
+                    {article.subHeadline}
+                  </p>
+                )}
+
+                <p class="remarque-entry-kicker" style="margin:0">
+                  <span class="remarque-entry-section">{article.category.name}</span>
+                  <span class="remarque-dot" aria-hidden="true">
+                    ·
+                  </span>
+                  <span>{formatDateService(article.publishedAt)}</span>
+                </p>
+              </article>
+            ))}
+          </div>
+        </>
+      )
+    }
+
+    {
+      !query && recent.length === 0 && (
+        <p class="text-body" style="margin:var(--space-7) 0 0;color:var(--color-muted)">
+          No Stories have been published yet.
+        </p>
+      )
+    }
+
+    {
+      results && results.items.length === 0 && (
+        <p class="text-body" style="margin:var(--space-7) 0 0;color:var(--color-muted)">
+          No Stories found for that search.
+        </p>
+      )
+    }
+
+    {
+      results && results.items.length > 0 && (
+        <>
+          <p class="text-meta" style="margin:var(--space-7) 0 var(--space-1)">
+            {resultLine}
+          </p>
+
+          <div style="border-top:var(--border-width) solid var(--color-border-bold)">
+            {results.items.map((article) => (
+              <article style="padding:var(--space-5) 0;border-bottom:var(--border-width) solid var(--color-border);display:flex;flex-direction:column;gap:var(--space-2)">
+                <h3
+                  data-story-title
+                  style="font-family:var(--font-display);font-size:1.3125rem;line-height:1.25;letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin:0;text-wrap:balance"
+                >
+                  <a class="story-link" href={buildStoryPathService(article)}>
+                    {article.headline}
+                  </a>
+                </h3>
+
+                {article.subHeadline && (
+                  <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0;text-wrap:pretty">
+                    {article.subHeadline}
+                  </p>
+                )}
+
+                <p class="remarque-entry-kicker" style="margin:0">
+                  <span class="remarque-entry-section">{article.category.name}</span>
+                  <span class="remarque-dot" aria-hidden="true">
+                    ·
+                  </span>
+                  <span>{formatDateService(article.publishedAt)}</span>
+                </p>
+              </article>
+            ))}
+          </div>
+
+          <Pagination
+            basePath="/search"
+            page={results.page}
+            query={query}
+            totalPages={results.totalPages}
+          />
+        </>
+      )
+    }
+  </div>
+</BaseLayout>

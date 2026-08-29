@@ -1,0 +1,16 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not found — Full Story">
+  <div style="max-width:42rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-5)) var(--space-10)">
+    <h1 class="text-title" style="margin:0 0 var(--space-5)">That page does not exist.</h1>
+    <p
+      class="text-body"
+      style="margin:0 0 var(--space-6);color:var(--color-fg-muted);max-width:34rem;text-wrap:pretty"
+    >
+      The Story may have been unpublished, or the address may be mistyped.
+    </p>
+    <a class="text-body link-accent" href="/">Back to Home</a>
+  </div>
+</BaseLayout>

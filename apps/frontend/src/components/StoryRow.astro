@@ -1,0 +1,56 @@
+---
+import type { ArticleData } from '@/types/api.types';
+import { buildStoryPathService } from '@/services/build-story-path.service';
+import { formatDateService } from '@/services/format-date.service';
+
+interface Props {
+  article: ArticleData;
+  showAuthor?: boolean;
+}
+
+const { article, showAuthor = false } = Astro.props;
+const href = buildStoryPathService(article);
+---
+
+<article
+  data-row="listing"
+  style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,10.5rem);gap:var(--space-6);align-items:start;padding:var(--space-5) 0;border-bottom:var(--border-width) solid var(--color-border)"
+>
+  <div style="min-width:0;display:flex;flex-direction:column;gap:var(--space-2)">
+    <h3
+      data-story-title
+      style="font-family:var(--font-display);font-size:1.3125rem;line-height:1.25;letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin:0;text-wrap:balance"
+    >
+      <a class="story-link" href={href}>{article.headline}</a>
+    </h3>
+
+    {
+      article.subHeadline && (
+        <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0;text-wrap:pretty">
+          {article.subHeadline}
+        </p>
+      )
+    }
+
+    <p class="remarque-entry-kicker" style="margin:0">
+      <span class={showAuthor ? '' : 'remarque-entry-section'}>
+        {showAuthor ? article.author.name : article.category.name}
+      </span>
+      <span class="remarque-dot" aria-hidden="true">·</span>
+      <span>{formatDateService(article.publishedAt)}</span>
+    </p>
+  </div>
+
+  {
+    article.heroImageUrl && (
+      <a data-thumb href={href} style="display:block;text-decoration:none">
+        <img
+          alt=""
+          loading="lazy"
+          src={article.heroImageUrl}
+          style="width:100%;aspect-ratio:3 / 2;object-fit:cover;display:block;border:var(--border-width) solid var(--color-border);border-radius:var(--radius-sm)"
+        />
+      </a>
+    )
+  }
+</article>
