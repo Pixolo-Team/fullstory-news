@@ -159,3 +159,4 @@ package-lock.json
 
 # Seed session cookie - never commit
 apps/backend/seed/.cookies
+.vercel

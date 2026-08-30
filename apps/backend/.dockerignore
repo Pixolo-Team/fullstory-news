@@ -1,0 +1,13 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+npm-debug.log
+Dockerfile
+.dockerignore
+AGENTS.md
+seed
+scripts
+eslint.config.mjs
+nodemon.json
