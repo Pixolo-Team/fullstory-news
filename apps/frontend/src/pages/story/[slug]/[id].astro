@@ -19,7 +19,15 @@ const shareUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toS
 ---
 
 <BaseLayout
+  article={{
+    publishedTime: article.publishedAt ?? article.updatedAt,
+    modifiedTime: article.updatedAt,
+    author: article.author.name,
+    section: article.category.name,
+    tags: article.tags,
+  }}
   description={article.subHeadline ?? article.headline}
+  image={article.heroImageUrl ?? undefined}
   title={`${article.headline} — Full Story`}
 >
   <div style="max-width:58rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-6)) var(--space-10)">

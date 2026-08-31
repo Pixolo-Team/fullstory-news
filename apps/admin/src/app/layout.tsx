@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   title: 'Full Story Admin',
   description: 'Admin panel preview for managing Stories and Categories.',
   robots: { index: false, follow: false },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 interface RootLayoutProps {
