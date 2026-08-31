@@ -48,6 +48,11 @@ frontend response.
 
 Auth is an httpOnly session cookie set by `POST /auth/login`. No bearer tokens.
 
+**Only `/auth/*` requires a session.** Every other endpoint is open, including
+writes. Access to the admin is gated by the admin app, which validates the
+session before rendering any dashboard route — see decisions.md #18 for what
+that does and does not protect.
+
 ### Response envelope
 
 ```json
@@ -157,7 +162,7 @@ Frontend use:
 
 ### `GET /admin/categories`
 
-Auth: session.
+Auth: none.
 
 Response `data`:
 
@@ -168,7 +173,7 @@ Response `data`:
 
 ### `POST /categories`
 
-Auth: session.
+Auth: none.
 
 ```json
 { "name": "World", "slug": "world" }
@@ -182,13 +187,13 @@ Errors: `409` duplicate name or slug, `422` empty name.
 
 ### `PATCH /categories/:id`
 
-Auth: session. Body: any subset of `POST`.
+Auth: none. Body: any subset of `POST`.
 
 Errors: `404`, `409`, `422`.
 
 ### `DELETE /categories/:id`
 
-Auth: session. Returns `204`.
+Auth: none. Returns `204`.
 
 Errors: `404`, `409` when articles reference it —
 
@@ -205,16 +210,16 @@ Errors: `404`, `409` when articles reference it —
 
 Auth: none. Session unlocks `status` and `q`.
 
-| Param | Type | Values | Auth |
-|---|---|---|---|
-| `category` | string | category slug | — |
-| `sort` | string | `latest` \| `published` \| `views` | — |
-| `status` | string | `draft` \| `published` \| `all` | session |
-| `q` | string | matches headline, sub-headline | session |
+| Param | Type | Values |
+|---|---|---|
+| `category` | string | category slug |
+| `sort` | string | `latest` \| `published` \| `views` |
+| `status` | string | `draft` \| `published` \| `all` |
+| `q` | string | matches headline, sub-headline |
 | `page` | int | | — |
 | `limit` | int | | — |
 
-Without a session, `status` is forced to `published`.
+`status` is honoured as sent; omitting it returns published only.
 
 Response `data`: paginated `items` of —
 
@@ -340,7 +345,7 @@ Frontend use:
 
 ### `GET /articles/:id`
 
-Auth: session. Drafts included. Does **not** record a view.
+Auth: none. Drafts included. Does **not** record a view.
 
 Response `data`: full article.
 
@@ -348,7 +353,8 @@ Errors: `401`, `404`.
 
 ### `POST /articles`
 
-Auth: session.
+Auth: none. `authorId` is not accepted — the server attributes the Story to
+the default author, since there is no session to read one from.
 
 ```json
 {
@@ -379,7 +385,7 @@ Errors: `401`, `422` invalid `categoryId` or missing `headline`.
 
 ### `PATCH /articles/:id`
 
-Auth: session. Any subset of `POST` fields, plus:
+Auth: none. Any subset of `POST` fields, plus:
 
 ```json
 { "status": "draft | published" }
@@ -392,14 +398,14 @@ Errors: `401`, `404`, `422`.
 
 ### `DELETE /articles/:id`
 
-Auth: session. Returns `204`. Cascades to `article_views` and
+Auth: none. Returns `204`. Cascades to `article_views` and
 `article_instagram_post`.
 
 Errors: `401`, `404`.
 
 ### `PUT /articles/:id/instagram`
 
-Auth: session. Replaces the full ordered list. Array position is `sort_order`.
+Auth: none. Replaces the full ordered list. Array position is `sort_order`.
 
 ```json
 { "urls": ["https://instagram.com/p/aaa", "https://instagram.com/p/bbb"] }
@@ -440,7 +446,7 @@ Frontend use:
 
 ### `POST /upload/image`
 
-Auth: session. `Content-Type: multipart/form-data`.
+Auth: none. `Content-Type: multipart/form-data`.
 
 | Field | Type |
 |---|---|
@@ -462,7 +468,7 @@ Errors: `401`, `413` too large, `415` unsupported type.
 
 ### `GET /admin/stats`
 
-Auth: session.
+Auth: none.
 
 Response `data`:
 

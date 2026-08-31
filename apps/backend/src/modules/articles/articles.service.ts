@@ -234,9 +234,17 @@ export class ArticlesService {
       contentHtml?: string;
       tags?: string[];
     },
-    author: AuthorData,
+    author?: AuthorData,
   ): Promise<ArticleDetailData> {
     await this.assertCategoryExistsService(payload.categoryId);
+
+    // Stories CRUD is unauthenticated, so there is usually no session author.
+    // Fall back to the newsroom's default byline.
+    const resolvedAuthor = author ?? (await this.articlesRepository.findDefaultAuthorRepository());
+
+    if (!resolvedAuthor) {
+      throw new ValidationError('No author exists to attribute this Story to');
+    }
 
     try {
       return await this.articlesRepository.createArticleRepository({
@@ -244,7 +252,7 @@ export class ArticlesService {
         sub_headline: payload.subHeadline?.trim() ?? null,
         slug: toSlugUtil(payload.slug ?? payload.headline),
         category_id: payload.categoryId,
-        author_id: author.id,
+        author_id: resolvedAuthor.id,
         hero_image_url: payload.heroImageUrl ?? null,
         content_html: sanitizeHtmlUtil(payload.contentHtml ?? ''),
         tags: this.normaliseTags(payload.tags),

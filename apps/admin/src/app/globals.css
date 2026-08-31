@@ -15,6 +15,8 @@
   --color-accent: #1a4fd6;
   --color-accent-soft: #e7eeff;
   --color-danger: #a3231d;
+  --color-disabled: #d7d7d2;
+  --color-disabled-fg: #8a8a90;
   --radius-md: 0.5rem;
   --radius-xl: 0.875rem;
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -31,6 +33,8 @@
   --color-accent: #1a4fd6;
   --color-accent-soft: #e7eeff;
   --color-danger: #a3231d;
+  --color-disabled: #d7d7d2;
+  --color-disabled-fg: #8a8a90;
 }
 
 html[data-theme='dark'] {
@@ -43,6 +47,8 @@ html[data-theme='dark'] {
   --color-accent: #8fb4ff;
   --color-accent-soft: #172235;
   --color-danger: #f08b85;
+  --color-disabled: #2f2f34;
+  --color-disabled-fg: #6f6f78;
 }
 
 * {
@@ -187,4 +193,77 @@ a {
 
 .admin-logout-button:hover {
   background-color: var(--color-paper-muted);
+}
+
+/* Story body editor.
+ *
+ * The public site styles Story HTML with the Remarque prose tier; the admin
+ * only needs enough structure that an editor can see what they are writing. */
+.admin-prose {
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.admin-prose > * + * {
+  margin-top: 0.85em;
+}
+
+.admin-prose h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.admin-prose h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.admin-prose ul,
+.admin-prose ol {
+  padding-left: 1.5rem;
+}
+
+.admin-prose ul {
+  list-style: disc;
+}
+
+.admin-prose ol {
+  list-style: decimal;
+}
+
+.admin-prose li + li {
+  margin-top: 0.3em;
+}
+
+.admin-prose blockquote {
+  border-left: 3px solid var(--color-rule);
+  padding-left: 1rem;
+  color: var(--color-ink-muted);
+}
+
+.admin-prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-prose img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+}
+
+/* Placeholder line when the document is empty. The class and the attribute
+ * both come from the TipTap Placeholder extension, so the wording lives in
+ * the editor config rather than being duplicated here. */
+.admin-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--color-ink-muted);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

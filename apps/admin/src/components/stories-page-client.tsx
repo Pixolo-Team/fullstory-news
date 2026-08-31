@@ -50,7 +50,10 @@ export function StoriesPageClient({ articles, searchQuery, statusFilter }: Stori
   // Define States
   const [searchInput, setSearchInput] = useState<string>(searchQuery);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const [deleteState, submitDelete] = useActionState(deleteArticleAction, EMPTY_ACTION_RESULT);
+  const [deleteState, submitDelete, isDeleting] = useActionState(
+    deleteArticleAction,
+    EMPTY_ACTION_RESULT,
+  );
 
   // Helper Functions
   const publishedCount = articles.items.filter((article) => article.status === 'published').length;
@@ -275,6 +278,7 @@ export function StoriesPageClient({ articles, searchQuery, statusFilter }: Stori
             ? `"${pendingDeleteArticle.headline}" will be removed. This cannot be undone.`
             : ''
         }
+        busy={isDeleting}
         onCancel={handleCancelDeleteStory}
         onConfirm={handleConfirmDeleteStory}
         open={pendingDeleteId !== null}

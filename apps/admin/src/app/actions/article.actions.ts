@@ -132,7 +132,10 @@ export async function updateArticleAction(
 
   return {
     errorMessage: null,
-    successMessage: response.data?.status === 'published' ? 'Story published' : 'Draft saved',
+    successMessage:
+      response.data?.status === 'published'
+        ? 'Story published successfully'
+        : 'Draft saved successfully',
   };
 }
 
@@ -160,5 +163,5 @@ export async function deleteArticleAction(
   // the list in place instead of forcing a full navigation.
   revalidatePath('/stories');
 
-  return { errorMessage: null, successMessage: 'Story deleted' };
+  return { errorMessage: null, successMessage: 'Story deleted successfully' };
 }

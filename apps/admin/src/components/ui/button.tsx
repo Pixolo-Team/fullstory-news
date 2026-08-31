@@ -24,11 +24,16 @@ export function Button({
         ? 'bg-transparent text-ink hover:bg-paper-muted'
         : 'bg-accent text-paper hover:opacity-95';
 
+  // A disabled button must stop looking pressable: no hover, dimmed, and a
+  // cursor that says so. Without this a submitting button looks live.
+  const disabledClassName =
+    'disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-transparent disabled:bg-disabled disabled:text-disabled-fg';
+
   const sizeClassName = size === 'sm' ? 'h-9 px-3 text-sm' : 'h-10 px-4 text-sm';
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition ${variantClassName} ${sizeClassName} ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-2 rounded-md font-medium transition ${variantClassName} ${sizeClassName} ${disabledClassName} ${className}`.trim()}
       type={type}
       {...props}
     >

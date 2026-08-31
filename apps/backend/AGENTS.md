@@ -326,7 +326,7 @@ These must never be duplicated in a client:
 
 | Rule | Requirement |
 | --- | --- |
-| Draft visibility | Unauthenticated reads return `status = 'published'` only. Enforced in the service, so no route can forget |
+| Draft visibility | Every read path returns published only **unless the caller sends an explicit `status`**. `GET /articles` with no `status` — how the public site calls it — must never include drafts. `?status=draft` / `?status=all` is the admin's deliberate opt-in, reachable without a session; see decisions.md #18 |
 | View counting | An article read writes an `article_views` row **and** increments `articles.view_count` in the same transaction |
 | Trending | Computed from `article_views` over a rolling 7 days. Never from `view_count` — that counter is lifetime and cannot be windowed |
 | `published_at` | Set once, on the first transition to `published`. Never overwritten on later edits |
@@ -335,8 +335,10 @@ These must never be duplicated in a client:
 | HTML sanitisation | `content_html` is sanitised on write, before storage. Never trusted at render time |
 | Similar articles | Same category, excluding the current article, most recent first |
 
-> A draft leaking to an unauthenticated caller is unpublished journalism reaching the
-> public. Treat it as a Sev-1 bug, not a style issue.
+> A draft reaching the public site is unpublished journalism in front of readers.
+> Treat it as a Sev-1 bug, not a style issue. `GET /articles` with an explicit
+> `status` is the one deliberate exception, because the admin reads its Story
+> list through it without a session — omitting `status` must stay published-only.
 
 ---
 
@@ -345,6 +347,10 @@ These must never be duplicated in a client:
 - Never log secrets or expose env variables
 - Validate all input via DTOs before it reaches a service
 - No hardcoded credentials
+- **Only `/auth/*` requires a session.** Stories CRUD, categories, dashboard
+  stats and media are open; access to the admin is gated by the admin app,
+  which validates the session server-side before rendering any dashboard
+  route. See decisions.md #18 for what that does and does not protect
 - The **Supabase secret key never leaves this service** — it is not exposed to the
   admin or the public site
 - Env vars are defined in `.env`, mirrored in `.env.example`, and read only through

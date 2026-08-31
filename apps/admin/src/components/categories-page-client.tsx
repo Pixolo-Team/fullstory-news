@@ -52,7 +52,10 @@ export function CategoriesPageClient({ categories }: CategoriesPageClientProps) 
     editingCategoryId ? updateCategoryAction : createCategoryAction,
     EMPTY_ACTION_RESULT,
   );
-  const [deleteState, submitDelete] = useActionState(deleteCategoryAction, EMPTY_ACTION_RESULT);
+  const [deleteState, submitDelete, isDeleting] = useActionState(
+    deleteCategoryAction,
+    EMPTY_ACTION_RESULT,
+  );
 
   // Helper Functions
   const totalArticles = categories.reduce(
@@ -328,6 +331,7 @@ export function CategoriesPageClient({ categories }: CategoriesPageClientProps) 
             ? `"${pendingDeleteCategory.name}" will be removed. This cannot be undone.`
             : ''
         }
+        busy={isDeleting}
         onCancel={handleCancelDeleteCategory}
         onConfirm={handleConfirmDeleteCategory}
         open={pendingDeleteId !== null}

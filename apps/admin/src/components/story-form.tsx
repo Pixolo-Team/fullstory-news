@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDateService } from '@/services/format-date.service';
 
@@ -51,6 +52,7 @@ export function StoryForm({
 
   // Define States
   const [slug, setSlug] = useState<string>(article?.slug ?? '');
+  const [pendingStatus, setPendingStatus] = useState<'draft' | 'published' | null>(null);
   const [actionState, submitArticle, isSubmitting] = useActionState(
     article ? updateArticleAction : createArticleAction,
     EMPTY_ACTION_RESULT,
@@ -76,6 +78,8 @@ export function StoryForm({
     if (statusInputRef.current) {
       statusInputRef.current.value = nextStatus;
     }
+
+    setPendingStatus(nextStatus);
   };
 
   // Use Effects
@@ -87,6 +91,8 @@ export function StoryForm({
     if (actionState.successMessage) {
       showToast({ title: actionState.successMessage, tone: 'success' });
     }
+
+    setPendingStatus(null);
   }, [actionState, showToast]);
 
   return (
@@ -209,15 +215,10 @@ export function StoryForm({
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="content-html">Story body</Label>
-                <Textarea
-                  className="min-h-72 font-mono text-[13px]"
-                  defaultValue={article?.contentHtml ?? ''}
-                  id="content-html"
-                  name="contentHtml"
-                  placeholder="<p>Write Story HTML here</p>"
-                />
+                <RichTextEditor defaultValue={article?.contentHtml ?? ''} name="contentHtml" />
                 <p className="text-xs text-ink-muted">
-                  HTML for now. The rich text editor is still an open decision.
+                  Formatting is limited to what a Story page renders: headings, lists, quotes,
+                  links and images.
                 </p>
               </div>
             </div>
@@ -249,8 +250,8 @@ export function StoryForm({
                   onClick={() => setSubmitStatus('published')}
                   type="submit"
                 >
-                  {isSubmitting
-                    ? 'Saving...'
+                  {isSubmitting && pendingStatus === 'published'
+                    ? 'Publishing...'
                     : isPublished
                       ? 'Update published Story'
                       : 'Publish Story'}
@@ -261,7 +262,11 @@ export function StoryForm({
                   type="submit"
                   variant="ghost"
                 >
-                  {isPublished ? 'Unpublish and save as draft' : 'Save draft'}
+                  {isSubmitting && pendingStatus === 'draft'
+                    ? 'Saving...'
+                    : isPublished
+                      ? 'Unpublish and save as draft'
+                      : 'Save draft'}
                 </Button>
               </div>
 

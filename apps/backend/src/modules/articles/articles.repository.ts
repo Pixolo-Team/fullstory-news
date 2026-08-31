@@ -1,5 +1,6 @@
 // TYPES //
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { AuthorData } from '@/modules/auth/auth.types.js';
 import type {
   ArticleDetailData,
   ArticleInstagramPostData,
@@ -337,6 +338,38 @@ export class ArticlesRepository {
     }
 
     return (data ?? []).map((row) => this.mapInstagramRow(row));
+  }
+
+  /**
+   * Returns the author a Story is attributed to when the caller supplies none.
+   *
+   * Stories CRUD is unauthenticated, so there is no session to read an author
+   * from. The oldest author row stands in as the newsroom byline.
+   *
+   * @returns The oldest author row, or null when the table is empty
+   */
+  async findDefaultAuthorRepository(): Promise<AuthorData | null> {
+    const { data, error } = await this.supabase
+      .from('authors')
+      .select('id, name, email, avatar_url')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle<{ id: string; name: string; email: string; avatar_url: string | null }>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      avatarUrl: data.avatar_url,
+    };
   }
 
   /**

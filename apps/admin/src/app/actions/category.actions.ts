@@ -35,7 +35,7 @@ export async function createCategoryAction(
   }
 
   revalidatePath('/categories');
-  return { errorMessage: null, successMessage: 'Category added' };
+  return { errorMessage: null, successMessage: 'Category added successfully' };
 }
 
 /**
@@ -65,7 +65,7 @@ export async function updateCategoryAction(
   }
 
   revalidatePath('/categories');
-  return { errorMessage: null, successMessage: 'Category updated' };
+  return { errorMessage: null, successMessage: 'Category updated successfully' };
 }
 
 /**
@@ -89,5 +89,5 @@ export async function deleteCategoryAction(
   }
 
   revalidatePath('/categories');
-  return { errorMessage: null, successMessage: 'Category deleted' };
+  return { errorMessage: null, successMessage: 'Category deleted successfully' };
 }

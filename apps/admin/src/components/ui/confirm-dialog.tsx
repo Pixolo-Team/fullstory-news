@@ -10,6 +10,7 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   tone?: 'default' | 'danger';
+  busy?: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -24,6 +25,7 @@ export function ConfirmDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   tone = 'default',
+  busy = false,
   onCancel,
   onConfirm,
 }: ConfirmDialogProps) {
@@ -94,20 +96,23 @@ export function ConfirmDialog({
         </div>
 
         <div className="mt-6 flex justify-end gap-3">
-          <Button onClick={onCancel} variant="outline">
+          <Button disabled={busy} onClick={onCancel} variant="outline">
             {cancelLabel}
           </Button>
           <button
             className={
-              tone === 'danger'
-                ? 'inline-flex h-10 items-center justify-center rounded-lg bg-danger px-4 text-sm font-medium text-paper transition-opacity hover:opacity-90'
-                : 'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-paper transition-opacity hover:opacity-90'
+              busy
+                ? 'inline-flex h-10 items-center justify-center rounded-lg bg-disabled px-4 text-sm font-medium text-disabled-fg cursor-not-allowed'
+                : tone === 'danger'
+                ? 'inline-flex h-10 items-center justify-center rounded-lg bg-danger px-4 text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-fg'
+                : 'inline-flex h-10 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-disabled disabled:text-disabled-fg'
             }
+            disabled={busy}
             onClick={onConfirm}
             ref={confirmButtonRef}
             type="button"
           >
-            {confirmLabel}
+            {busy ? 'Working...' : confirmLabel}
           </button>
         </div>
       </div>

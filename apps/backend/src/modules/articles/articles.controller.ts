@@ -1,7 +1,5 @@
 // TYPES //
 import type { PaginatedData } from '@/common/types/api-response.types.js';
-import type { Request, Response } from 'express';
-import type { AppConfigData } from '@/config/app.config.js';
 import type {
   ArticleCategoryGroupData,
   ArticleDetailData,
@@ -9,16 +7,11 @@ import type {
   ArticleListItemData,
 } from '@/modules/articles/articles.types.js';
 
-// CONFIG //
-import { buildAppConfig } from '@/config/app.config.js';
-
 // SERVICES //
 import { ArticlesService } from '@/modules/articles/articles.service.js';
-import { AuthService } from '@/modules/auth/auth.service.js';
 
 // LIBRARIES //
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Req, Res } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateArticleDto, GetArticlesDto, UpdateArticleDto, UpdateArticleInstagramDto } from '@/modules/articles/articles.dto.js';
 
@@ -28,30 +21,23 @@ import { CreateArticleDto, GetArticlesDto, UpdateArticleDto, UpdateArticleInstag
 @ApiTags('Articles')
 @Controller('articles')
 export class ArticlesController {
-  private readonly appConfig: AppConfigData;
-
-  constructor(
-    private readonly articlesService: ArticlesService,
-    private readonly authService: AuthService,
-    configService: ConfigService,
-  ) {
-    this.appConfig = buildAppConfig(configService);
-  }
+  constructor(private readonly articlesService: ArticlesService) {}
 
   /**
    * Returns article list data.
    * @param query - Caller-supplied filters and pagination
-   * @param request - Express request used to inspect optional auth
    * @returns Paginated article list items
    */
   @Get()
   @ApiOperation({ summary: 'List articles' })
   async getArticles(
     @Query() query: GetArticlesDto,
-    @Req() request: Request,
   ): Promise<PaginatedData<ArticleListItemData>> {
-    const isAuthenticated = await this.isAuthenticatedRequest(request);
-    return this.articlesService.getArticlesService(query, isAuthenticated);
+    // Stories CRUD is unauthenticated, so an explicit status is taken at face
+    // value: the admin lists drafts without a session. Omitting status still
+    // means published only, because the public site calls this route that way
+    // and must never render unpublished journalism.
+    return this.articlesService.getArticlesService(query, query.status !== undefined);
   }
 
   /**
@@ -126,12 +112,7 @@ export class ArticlesController {
    */
   @Get(':id')
   @ApiOperation({ summary: 'Get one article for admin editing' })
-  async getArticleById(
-    @Param('id') id: string,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<ArticleDetailData> {
-    await this.authenticateRequest(request, response);
+  async getArticleById(@Param('id') id: string): Promise<ArticleDetailData> {
     return this.articlesService.getArticleByIdService(id);
   }
 
@@ -144,13 +125,8 @@ export class ArticlesController {
    */
   @Post()
   @ApiOperation({ summary: 'Create a draft article' })
-  async createArticle(
-    @Body() body: CreateArticleDto,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<ArticleDetailData> {
-    const session = await this.authenticateRequest(request, response);
-    return this.articlesService.createArticleService(body, session.author);
+  async createArticle(@Body() body: CreateArticleDto): Promise<ArticleDetailData> {
+    return this.articlesService.createArticleService(body);
   }
 
   /**
@@ -166,10 +142,7 @@ export class ArticlesController {
   async updateArticle(
     @Param('id') id: string,
     @Body() body: UpdateArticleDto,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
   ): Promise<ArticleDetailData> {
-    await this.authenticateRequest(request, response);
     return this.articlesService.updateArticleService(id, body);
   }
 
@@ -183,12 +156,7 @@ export class ArticlesController {
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({ summary: 'Delete an article' })
-  async deleteArticle(
-    @Param('id') id: string,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<null> {
-    await this.authenticateRequest(request, response);
+  async deleteArticle(@Param('id') id: string): Promise<null> {
     return this.articlesService.deleteArticleService(id);
   }
 
@@ -205,53 +173,7 @@ export class ArticlesController {
   async updateArticleInstagram(
     @Param('id') id: string,
     @Body() body: UpdateArticleInstagramDto,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
   ): Promise<ArticleInstagramPostData[]> {
-    await this.authenticateRequest(request, response);
     return this.articlesService.updateArticleInstagramService(id, body.urls);
-  }
-
-  /**
-   * Resolves the current authenticated admin session.
-   * @param request - Express request containing the session cookie
-   * @param response - Express response used when tokens rotate
-   * @returns Resolved session data
-   */
-  private async authenticateRequest(request: Request, response: Response) {
-    const session = await this.authService.getCurrentAuthorService(
-      request.headers.cookie,
-      this.appConfig.sessionCookieName,
-    );
-
-    if (session.sessionCookie) {
-      response.cookie(
-        this.appConfig.sessionCookieName,
-        this.authService.encodeSessionCookieService(session.sessionCookie),
-        {
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: this.appConfig.isProduction,
-          maxAge: this.appConfig.sessionCookieMaxAgeMs,
-          path: '/',
-        },
-      );
-    }
-
-    return session;
-  }
-
-  /**
-   * Determines whether the caller has a valid admin session.
-   * @param request - Express request containing the session cookie
-   * @returns True when the request is authenticated
-   */
-  private async isAuthenticatedRequest(request: Request): Promise<boolean> {
-    try {
-      await this.authService.getCurrentAuthorService(request.headers.cookie, this.appConfig.sessionCookieName);
-      return true;
-    } catch {
-      return false;
-    }
   }
 }

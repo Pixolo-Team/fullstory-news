@@ -24,6 +24,7 @@ Decisions are recorded here rather than made silently in code. Anything marked
 | 15 | Code-review path routing   | **Open** — paths are inverted        |
 | 16 | Unpublish vs published_at  | **Decided** — clear `published_at` on unpublish |
 | 17 | Category ordering          | **Open** — no sort_order column       |
+| 18 | API access control         | **Decided** — gated at the admin app  |
 
 ---
 
@@ -315,3 +316,44 @@ World, Tech, Politics, Sports
 
 Option 2 is the MVP answer; option 1 is correct once the client wants to
 reorder without a deploy.
+
+---
+
+## 18. API access control — Decided: gated at the admin app, not the API
+
+Only `/auth/*` requires a session. Stories CRUD, categories writes, dashboard
+stats and media upload are unauthenticated.
+
+Access to the admin is enforced in `apps/admin/src/app/(dashboard)/layout.tsx`,
+which calls `GET /auth/me` on the server and redirects to `/login` when there is
+no valid session. Nothing renders before that check, so no one browses the admin
+without signing in.
+
+**Reasoning:** the session handling added friction disproportionate to a
+single-editor MVP, and the sign-in requirement people actually care about is
+"can someone open the admin", which the page gate answers.
+
+### What this protects
+
+- Nobody reaches an admin page without a valid Supabase session.
+- The public site is unchanged: `/articles/:slug/:id`, trending, latest and
+  by-category still serve published Stories only.
+
+### What this does not protect
+
+The API is a separate public host. Anyone who finds it can:
+
+- create and publish a Story
+- edit or permanently delete any Story (no trash, no revision history)
+- create, rename and delete Categories, which drive public navigation
+- list drafts via `GET /articles?status=draft`, so unpublished work is readable
+
+`authors.id` for a new Story falls back to the oldest author row, because there
+is no session to attribute it to.
+
+### Before real traffic
+
+Reinstate protection on the write paths — a shared `X-Api-Key` header is the
+smallest option and needs no session handling. Alternatively restrict the API
+to the admin's origin at the network layer, so only the admin server can reach
+it.
