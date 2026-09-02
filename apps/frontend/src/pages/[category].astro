@@ -15,12 +15,35 @@ if (!category) {
   return Astro.redirect('/404', 404);
 }
 
-const articles = await getArticlesRequest({ category: category.slug, page, limit: 10 });
+const articles = await getArticlesRequest({ category: category.slug, page, limit: 12 });
+const categoryIntro = `The latest reporting, analysis and developments in ${category.name}.`;
 ---
 
 <BaseLayout description={`Stories in ${category.name}`} title={`${category.name} - Full Story`}>
   <div class="container mx-auto px-4 py-10 sm:px-5 md:py-14">
-    <h1 class="text-title mb-7 mt-0">{category.name}</h1>
+    <header class="mb-6 border-b pb-6" style="border-bottom-width:var(--border-width);border-color:var(--color-border-bold)">
+      <p
+        class="m-0"
+        style="font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-fg-muted)"
+      >
+        Category
+      </p>
+      <div class="mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <h1 class="text-title m-0">{category.name}</h1>
+        <p
+          class="m-0"
+          style="font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-fg-muted)"
+        >
+          {articles.total} {articles.total === 1 ? 'Story' : 'Stories'}
+        </p>
+      </div>
+      <p
+        class="m-0 mt-3 max-w-[38rem] text-pretty"
+        style="font-family:var(--font-body);font-size:var(--text-body-lg);line-height:var(--leading-body);color:var(--color-fg-muted)"
+      >
+        {categoryIntro}
+      </p>
+    </header>
 
     {
       articles.items.length === 0 ? (
@@ -29,11 +52,12 @@ const articles = await getArticlesRequest({ category: category.slug, page, limit
         </p>
       ) : (
         <>
-          <div class="border-t" style="border-top-width:var(--border-width);border-color:var(--color-border-bold)">
-            {articles.items.map((article) => (
-              <StoryRow article={article} showAuthor />
+          <section>
+            {articles.items.map((article, index) => (
+              <StoryRow article={article} featured={index === 0 && page === 1} showAuthor />
             ))}
-          </div>
+          </section>
+
           <Pagination
             basePath={`/${category.slug}`}
             page={articles.page}

@@ -6,20 +6,24 @@ import { formatDateService } from '@/services/format-date.service';
 interface Props {
   article: ArticleData;
   showAuthor?: boolean;
+  featured?: boolean;
 }
 
-const { article, showAuthor = false } = Astro.props;
+const { article, showAuthor = false, featured = false } = Astro.props;
 const href = buildStoryPathService(article);
 ---
 
 <article
-  class="grid items-start gap-6 border-b py-5 sm:grid-cols-[minmax(0,1fr)_10.5rem]"
+  class="grid items-start gap-6 border-b py-6 sm:grid-cols-[minmax(0,1fr)_10.5rem]"
   data-row="listing"
   style="border-bottom-width:var(--border-width);border-color:var(--color-border)"
 >
   <div class="flex min-w-0 flex-col gap-2">
     <h3
-      class="m-0 text-balance text-[1.3125rem] font-medium leading-[1.25]"
+      class:list={[
+        'm-0 text-balance font-medium leading-[1.2]',
+        featured ? 'text-[1.55rem]' : 'text-[1.3125rem]',
+      ]}
       data-story-title
       style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
     >
@@ -29,7 +33,7 @@ const href = buildStoryPathService(article);
     {
       article.subHeadline && (
         <p
-          class="m-0 text-pretty"
+          class="m-0 max-w-[68ch] text-pretty"
           style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted)"
         >
           {article.subHeadline}
@@ -48,10 +52,17 @@ const href = buildStoryPathService(article);
 
   {
     article.heroImageUrl && (
-      <a class="block no-underline" data-thumb href={href}>
+      <a
+        class:list={['block no-underline', featured && 'sm:justify-self-end']}
+        data-thumb
+        href={href}
+      >
         <img
           alt=""
-          class="block aspect-[3/2] w-full rounded-sm border object-cover"
+          class:list={[
+            'block w-full rounded-sm border object-cover',
+            featured ? 'aspect-[16/9] sm:w-56' : 'aspect-[3/2]',
+          ]}
           loading="lazy"
           src={article.heroImageUrl}
           style="border-width:var(--border-width);border-color:var(--color-border)"
