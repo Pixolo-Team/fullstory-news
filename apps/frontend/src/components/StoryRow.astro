@@ -13,42 +13,48 @@ const href = buildStoryPathService(article);
 ---
 
 <article
+  class="grid items-start gap-6 border-b py-5 sm:grid-cols-[minmax(0,1fr)_10.5rem]"
   data-row="listing"
-  style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,10.5rem);gap:var(--space-6);align-items:start;padding:var(--space-5) 0;border-bottom:var(--border-width) solid var(--color-border)"
+  style="border-bottom-width:var(--border-width);border-color:var(--color-border)"
 >
-  <div style="min-width:0;display:flex;flex-direction:column;gap:var(--space-2)">
+  <div class="flex min-w-0 flex-col gap-2">
     <h3
+      class="m-0 text-balance text-[1.3125rem] font-medium leading-[1.25]"
       data-story-title
-      style="font-family:var(--font-display);font-size:1.3125rem;line-height:1.25;letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin:0;text-wrap:balance"
+      style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
     >
       <a class="story-link" href={href}>{article.headline}</a>
     </h3>
 
     {
       article.subHeadline && (
-        <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0;text-wrap:pretty">
+        <p
+          class="m-0 text-pretty"
+          style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted)"
+        >
           {article.subHeadline}
         </p>
       )
     }
 
-    <p class="remarque-entry-kicker" style="margin:0">
+    <p class="remarque-entry-kicker m-0">
       <span class={showAuthor ? '' : 'remarque-entry-section'}>
         {showAuthor ? article.author.name : article.category.name}
       </span>
-      <span class="remarque-dot" aria-hidden="true">·</span>
+      <span class="remarque-dot" aria-hidden="true">&middot;</span>
       <span>{formatDateService(article.publishedAt)}</span>
     </p>
   </div>
 
   {
     article.heroImageUrl && (
-      <a data-thumb href={href} style="display:block;text-decoration:none">
+      <a class="block no-underline" data-thumb href={href}>
         <img
           alt=""
+          class="block aspect-[3/2] w-full rounded-sm border object-cover"
           loading="lazy"
           src={article.heroImageUrl}
-          style="width:100%;aspect-ratio:3 / 2;object-fit:cover;display:block;border:var(--border-width) solid var(--color-border);border-radius:var(--radius-sm)"
+          style="border-width:var(--border-width);border-color:var(--color-border)"
         />
       </a>
     )

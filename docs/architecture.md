@@ -113,10 +113,10 @@ Typography, readability, white space, clear hierarchy, simple grids, minimal
 decoration. The Story is the visual focus. The public site should not look like a
 fintech dashboard, a SaaS app, or a dense enterprise portal.
 
-Client branding has not arrived. Until it does, both apps use neutral placeholder
-tokens defined in one file per app (`apps/frontend/src/styles/global.css`,
-`apps/admin/src/app/globals.css`). Components reference tokens; they must not
-hard-code colours or fonts.
+Client branding has not arrived. Until it does, the public site uses Tailwind 4
+for layout utilities plus neutral placeholder tokens from the Remarque CSS
+files, and the admin uses its own token file (`apps/admin/src/app/globals.css`).
+Components must not hard-code colours or fonts.
 
 ## Deployment
 

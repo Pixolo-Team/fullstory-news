@@ -22,8 +22,8 @@ const iconStyle =
   'color:var(--color-fg-muted);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px';
 ---
 
-<footer style="border-top:var(--border-width) solid var(--color-border);margin-top:var(--space-9)">
-  <div style="max-width:64rem;margin:0 auto;padding:var(--space-8) clamp(var(--space-4),4vw,var(--space-5))">
+<footer class="mt-9 border-t" style="border-color:var(--color-border);border-top-width:var(--border-width)">
+  <div class="container mx-auto px-4 py-8 sm:px-5">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:var(--space-6) var(--space-8);align-items:start">
       <div>
         <p class="text-label" style="margin:0 0 var(--space-2)">Categories</p>
@@ -111,7 +111,7 @@ const iconStyle =
     <div data-footer-bottom style="margin-top:var(--space-7);padding-top:var(--space-5);border-top:var(--border-width) solid var(--color-border);display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:var(--space-5)">
       <div style="min-width:0">
         <p class="text-meta" style="margin:0;font-size:0.875rem">
-          © {year} Full Story. All rights reserved.
+          &copy; {year} Full Story. All rights reserved.
         </p>
       </div>
 

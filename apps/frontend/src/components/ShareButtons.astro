@@ -10,35 +10,27 @@ const encodedUrl = encodeURIComponent(url);
 const encodedTitle = encodeURIComponent(title);
 ---
 
-<div
-  style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-5)"
-  data-share
-  data-url={url}
-  data-title={title}
->
+<div class="mt-5 flex flex-wrap gap-2" data-share data-title={title} data-url={url}>
   <a
-    class="remarque-button"
+    class="remarque-button whitespace-nowrap no-underline"
     href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
     rel="noopener noreferrer"
-    style="white-space:nowrap;text-decoration:none"
     target="_blank">WhatsApp</a
   >
   <a
-    class="remarque-button"
+    class="remarque-button whitespace-nowrap no-underline"
     href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
     rel="noopener noreferrer"
-    style="white-space:nowrap;text-decoration:none"
     target="_blank">X</a
   >
   <a
-    class="remarque-button"
+    class="remarque-button whitespace-nowrap no-underline"
     href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
     rel="noopener noreferrer"
-    style="white-space:nowrap;text-decoration:none"
     target="_blank">Facebook</a
   >
-  <button class="remarque-button" data-copy style="white-space:nowrap" type="button">Copy link</button>
-  <button class="remarque-button" data-native hidden style="white-space:nowrap" type="button">Share</button>
+  <button class="remarque-button whitespace-nowrap" data-copy type="button">Copy link</button>
+  <button class="remarque-button whitespace-nowrap" data-native hidden type="button">Share</button>
 </div>
 
 <script>

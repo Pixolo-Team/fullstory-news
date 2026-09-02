@@ -12,41 +12,50 @@ interface Props {
 const { article, size = 'small', showSection = true } = Astro.props;
 
 const href = buildStoryPathService(article);
-const titleSize =
-  size === 'large' ? 'clamp(1.3125rem,4.5vw,1.5rem)' : '1.1875rem';
 ---
 
-<article style="display:flex;flex-direction:column;gap:var(--space-3)">
+<article class="flex flex-col gap-3">
   {
     article.heroImageUrl && (
-      <a data-thumb href={href} style="display:block;text-decoration:none">
+      <a class="block no-underline" data-thumb href={href}>
         <img
           alt=""
+          class:list={[
+            'block w-full rounded-sm border object-cover',
+            size === 'large' ? 'aspect-[16/9] xl:aspect-[16/7]' : 'aspect-[3/2]',
+          ]}
           loading="lazy"
           src={article.heroImageUrl}
-          style={`width:100%;aspect-ratio:${size === 'large' ? '16 / 10' : '3 / 2'};object-fit:cover;display:block;border:var(--border-width) solid var(--color-border);border-radius:var(--radius-sm)`}
+          style="border-width:var(--border-width);border-color:var(--color-border)"
         />
       </a>
     )
   }
 
   <h3
-    style={`font-family:var(--font-display);font-size:${titleSize};line-height:1.2;letter-spacing:var(--tracking-title);font-weight:var(--weight-medium);margin:0;text-wrap:balance`}
+    class:list={[
+      'm-0 text-balance font-medium leading-tight',
+      size === 'large' ? 'text-[clamp(1.3125rem,4.5vw,1.5rem)]' : 'text-[1.1875rem]',
+    ]}
+    style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
   >
     <a class="story-link" href={href}>{article.headline}</a>
   </h3>
 
   {
     size === 'large' && article.subHeadline && (
-      <p style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);margin:0;text-wrap:pretty">
+      <p
+        class="m-0 max-w-[58ch] text-pretty"
+        style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted)"
+      >
         {article.subHeadline}
       </p>
     )
   }
 
-  <p class="remarque-entry-kicker" style="margin:0">
+  <p class="remarque-entry-kicker m-0">
     {showSection && <span class="remarque-entry-section">{article.category.name}</span>}
-    {showSection && <span class="remarque-dot" aria-hidden="true">·</span>}
+    {showSection && <span class="remarque-dot" aria-hidden="true">&middot;</span>}
     <span>{formatDateService(article.publishedAt)}</span>
   </p>
 </article>

@@ -18,18 +18,18 @@ if (!category) {
 const articles = await getArticlesRequest({ category: category.slug, page, limit: 10 });
 ---
 
-<BaseLayout description={`Stories in ${category.name}`} title={`${category.name} — Full Story`}>
-  <div style="max-width:64rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-5)) var(--space-10)">
-    <h1 class="text-title" style="margin:0 0 var(--space-7)">{category.name}</h1>
+<BaseLayout description={`Stories in ${category.name}`} title={`${category.name} - Full Story`}>
+  <div class="container mx-auto px-4 py-10 sm:px-5 md:py-14">
+    <h1 class="text-title mb-7 mt-0">{category.name}</h1>
 
     {
       articles.items.length === 0 ? (
-        <p class="text-body" style="margin:0;color:var(--color-muted)">
+        <p class="text-body m-0" style="color:var(--color-muted)">
           No Stories in this Category yet.
         </p>
       ) : (
         <>
-          <div style="border-top:var(--border-width) solid var(--color-border-bold)">
+          <div class="border-t" style="border-top-width:var(--border-width);border-color:var(--color-border-bold)">
             {articles.items.map((article) => (
               <StoryRow article={article} showAuthor />
             ))}

@@ -24,14 +24,15 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1).slice(
   totalPages > 1 && (
     <nav
       aria-label="Pagination"
-      style="display:flex;justify-content:center;align-items:center;gap:var(--space-4);margin-top:var(--space-7);font-family:var(--font-mono);font-size:var(--text-meta);font-variant-numeric:tabular-nums lining-nums"
+      class="mt-7 flex items-center justify-center gap-4"
+      style="font-family:var(--font-mono);font-size:var(--text-meta);font-variant-numeric:tabular-nums lining-nums"
     >
       {page > 1 ? (
         <a href={pageHref(page - 1)} class="link-accent">
-          ‹ Prev
+          {'< Prev'}
         </a>
       ) : (
-        <span style="color:var(--color-muted)">‹ Prev</span>
+        <span style="color:var(--color-muted)">{'< Prev'}</span>
       )}
 
       {pages.map((target) =>
@@ -44,14 +45,14 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1).slice(
         ),
       )}
 
-      {totalPages > 5 && <span style="color:var(--color-border-bold)">…</span>}
+      {totalPages > 5 && <span style="color:var(--color-border-bold)">...</span>}
 
       {page < totalPages ? (
         <a href={pageHref(page + 1)} class="link-accent">
-          Next ›
+          {'Next >'}
         </a>
       ) : (
-        <span style="color:var(--color-muted)">Next ›</span>
+        <span style="color:var(--color-muted)">{'Next >'}</span>
       )}
     </nav>
   )

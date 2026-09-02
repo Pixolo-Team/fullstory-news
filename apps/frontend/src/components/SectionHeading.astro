@@ -5,26 +5,30 @@ interface Props {
   linkLabel?: string;
 }
 
-const { label, href, linkLabel = 'View all →' } = Astro.props;
+const { label, href, linkLabel = 'View all ->' } = Astro.props;
 ---
 
 {
   href ? (
-    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-4);padding-bottom:var(--space-3);border-bottom:var(--border-width) solid var(--color-border-bold)">
-      <p class="text-label" style="margin:0">
+    <div
+      class="flex items-baseline justify-between gap-4 border-b pb-3"
+      style="border-bottom-width:var(--border-width);border-color:var(--color-border-bold)"
+    >
+      <p class="text-label m-0">
         {label}
       </p>
       <a
         href={href}
-        class="link-accent" style="font-family:var(--font-mono);font-size:var(--text-meta);white-space:nowrap"
+        class="link-accent whitespace-nowrap"
+        style="font-family:var(--font-mono);font-size:var(--text-meta)"
       >
         {linkLabel}
       </a>
     </div>
   ) : (
     <p
-      class="text-label"
-      style="margin:0 0 var(--space-1);padding-bottom:var(--space-3);border-bottom:var(--border-width) solid var(--color-border-bold)"
+      class="text-label mb-1 mt-0 border-b pb-3"
+      style="border-bottom-width:var(--border-width);border-color:var(--color-border-bold)"
     >
       {label}
     </p>

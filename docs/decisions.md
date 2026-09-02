@@ -101,7 +101,7 @@ client accepts that, since it means they cannot edit it themselves.
 
 ---
 
-## 6. Design system — Open (shadcn/ui leading)
+## 6. Design system — Decided: Tailwind 4 plus existing public tokens
 
 | Option | Fit |
 | ------ | --- |
@@ -110,19 +110,21 @@ client accepts that, since it means they cannot edit it themselves.
 | **MUI / Ant Design** | Strong opinions and heavy runtimes. Both fight the minimal, typography-first direction. |
 | **Chakra UI** | Reasonable, but runtime-CSS-heavy and React-only. |
 
-**Leaning:** shadcn/ui.
+**Decision:** On 2026-09-02, the public Astro site moved to Tailwind 4 through
+Astro's official Vite plugin, while keeping the existing Remarque token CSS
+already loaded in the app. The admin decision remains open separately.
 
-**Complication introduced by decision 1:** shadcn/ui is React. On Astro it works
-only inside React islands — fine for genuinely interactive pieces, wasteful for
-an article page that is static text. A realistic split:
+**Reasoning:** The public site needs utility-class layout work without adding a
+React runtime to every reader-facing page. Tailwind fits Astro's static-first
+HTML well, and keeping the current token CSS avoids a full visual rewrite while
+branding is still pending.
 
-- **Admin** — shadcn/ui, used fully.
-- **Public site** — Astro components with Tailwind, borrowing shadcn's tokens and
-  patterns, adding React islands only where interaction demands it.
+**Consequences:**
 
-That keeps one visual language without shipping React to every reader. Confirm
-before building components. Do not introduce a second design system without a
-clear reason.
+- **Public site** — Tailwind utilities are available in Astro components.
+- Existing design-token CSS stays in place until a broader visual cleanup is
+  explicitly requested.
+- **Admin** — no silent change. Its component-library choice remains separate.
 
 ---
 

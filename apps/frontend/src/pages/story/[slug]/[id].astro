@@ -28,10 +28,10 @@ const shareUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toS
   }}
   description={article.subHeadline ?? article.headline}
   image={article.heroImageUrl ?? undefined}
-  title={`${article.headline} — Full Story`}
+  title={`${article.headline} - Full Story`}
 >
-  <div style="max-width:58rem;margin:0 auto;padding:var(--space-9) clamp(var(--space-4),4vw,var(--space-6)) var(--space-10)">
-    <header class="remarque-post-header" style="max-width:46rem;margin-inline:auto">
+  <div class="mx-auto max-w-[58rem] px-4 py-10 sm:px-6 md:py-14">
+    <header class="remarque-post-header mx-auto max-w-[46rem]">
       <p class="remarque-post-kicker">
         <a
           class="remarque-post-kicker-section"
@@ -40,19 +40,19 @@ const shareUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toS
         >
       </p>
 
-      <h1 class="text-title" style="margin:0">{article.headline}</h1>
+      <h1 class="text-title m-0">{article.headline}</h1>
 
       {
         article.subHeadline && (
-          <p class="remarque-lead-lede" data-lede style="margin-top:var(--space-4)">
+          <p class="remarque-lead-lede mt-4" data-lede>
             {article.subHeadline}
           </p>
         )
       }
 
-      <p class="remarque-post-kicker" style="margin-top:var(--space-5)">
+      <p class="remarque-post-kicker mt-5">
         <span>By {article.author.name}</span>
-        <span class="remarque-dot" aria-hidden="true">·</span>
+        <span class="remarque-dot" aria-hidden="true">&middot;</span>
         <span>{formatDateService(article.publishedAt)}</span>
       </p>
 
@@ -63,26 +63,24 @@ const shareUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toS
       article.heroImageUrl && (
         <img
           alt=""
+          class="my-8 block aspect-[3/2] w-full rounded-sm border object-cover"
           src={article.heroImageUrl}
-          style="width:100%;aspect-ratio:3 / 2;margin-top:var(--space-8);margin-bottom:var(--space-8);object-fit:cover;display:block;border:var(--border-width) solid var(--color-border);border-radius:var(--radius-sm)"
+          style="border-width:var(--border-width);border-color:var(--color-border)"
         />
       )
     }
 
-    <div
-      class="remarque-prose"
-      style="max-width:46rem;margin-inline:auto"
-      set:html={article.contentHtml}
-    />
+    <div class="remarque-prose mx-auto max-w-[46rem]" set:html={article.contentHtml} />
 
     {
       article.tags.length > 0 && (
-        <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--space-3);margin-top:var(--space-7);max-width:46rem;margin-inline:auto">
+        <div class="mx-auto mt-7 flex max-w-[46rem] flex-wrap items-baseline gap-3">
           <span class="text-label">Tags</span>
           {article.tags.map((tag) => (
             <a
               href={`/search?q=${encodeURIComponent(tag)}`}
-              class="link-accent" style="font-family:var(--font-mono);font-size:var(--text-meta)"
+              class="link-accent"
+              style="font-family:var(--font-mono);font-size:var(--text-meta)"
             >
               #{tag}
             </a>
@@ -93,20 +91,21 @@ const shareUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toS
 
     {
       article.instagramPosts.length > 0 && (
-        <section style="margin-top:var(--space-9);padding-top:var(--space-6);border-top:var(--border-width) solid var(--color-border)">
-          <p class="text-label" style="margin:0 0 var(--space-5)">
+        <section class="mt-9 border-t pt-6" style="border-top-width:var(--border-width);border-color:var(--color-border)">
+          <p class="text-label mb-5 mt-0">
             Related Instagram posts
           </p>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:var(--space-5)">
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {article.instagramPosts.map((post) => (
-              <article style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <article class="flex flex-col gap-3">
                 <a
                   href={post.instagramUrl}
                   rel="noopener noreferrer"
-                  class="link-accent" style="font-family:var(--font-mono);font-size:var(--text-meta)"
+                  class="link-accent"
+                  style="font-family:var(--font-mono);font-size:var(--text-meta)"
                   target="_blank"
                 >
-                  View on Instagram →
+                  View on Instagram ->
                 </a>
               </article>
             ))}
@@ -117,11 +116,11 @@ const shareUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toS
 
     {
       similar.length > 0 && (
-        <section style="margin-top:var(--space-9);padding-top:var(--space-6);border-top:var(--border-width) solid var(--color-border)">
-          <p class="text-label" style="margin:0 0 var(--space-5)">
+        <section class="mt-9 border-t pt-6" style="border-top-width:var(--border-width);border-color:var(--color-border)">
+          <p class="text-label mb-5 mt-0">
             Similar stories
           </p>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:var(--space-5)">
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {similar.map((item) => (
               <StoryCard article={item} showSection={false} />
             ))}
