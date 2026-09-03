@@ -157,17 +157,15 @@ export class ArticlesRepository {
 
   /**
    * Reads one published article by slug and id.
-   * @param slug - Public slug
-   * @param id - Article id
+   * @param slug - Public slug, unique per article
    * @returns Full article when found
    */
-  async findPublishedArticleBySlugRepository(slug: string, id: string): Promise<ArticleDetailData | null> {
+  async findPublishedArticleBySlugRepository(slug: string): Promise<ArticleDetailData | null> {
     const { data, error } = await this.supabase
       .from('articles')
       .select(
         'id, headline, sub_headline, slug, status, hero_image_url, content_html, tags, view_count, published_at, created_at, updated_at, category:categories(id, name, slug), author:authors(id, name, email, avatar_url)',
       )
-      .eq('id', id)
       .eq('slug', slug)
       .eq('status', 'published')
       .maybeSingle<ArticleRowData>();
@@ -180,7 +178,29 @@ export class ArticlesRepository {
       return null;
     }
 
-    return this.mapArticleDetail(data, await this.findInstagramPostsByArticleIdRepository(id));
+    return this.mapArticleDetail(data, await this.findInstagramPostsByArticleIdRepository(data.id));
+  }
+
+  /**
+   * Checks whether a slug is already taken by a different article.
+   * @param slug - Candidate slug
+   * @param excludeId - Article id to ignore, when checking during an update
+   * @returns True when another article already has this slug
+   */
+  async slugExistsRepository(slug: string, excludeId?: string): Promise<boolean> {
+    let request = this.supabase.from('articles').select('id').eq('slug', slug).limit(1);
+
+    if (excludeId) {
+      request = request.neq('id', excludeId);
+    }
+
+    const { data, error } = await request;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data?.length ?? 0) > 0;
   }
 
   /**

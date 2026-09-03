@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
+import { ImageUploadField } from '@/components/ui/image-upload-field';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDateService } from '@/services/format-date.service';
@@ -143,18 +144,17 @@ export function StoryForm({
                 {hasSlugChanged ? (
                   <p className="text-xs text-danger">
                     This Story is published. Changing the slug breaks every existing link to
-                    /story/{savedSlug}/{article.id}.
+                    /story/{savedSlug}.
                   </p>
                 ) : null}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hero-image-url">Hero image URL</Label>
-                <Input
+                <Label htmlFor="hero-image-url">Hero image</Label>
+                <ImageUploadField
                   defaultValue={article?.heroImageUrl ?? ''}
                   id="hero-image-url"
                   name="heroImageUrl"
-                  placeholder="https://..."
                 />
               </div>
 

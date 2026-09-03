@@ -55,6 +55,14 @@ html[data-theme='dark'] {
   box-sizing: border-box;
 }
 
+/* Tailwind's preflight resets button cursor to the browser default, which
+ * reads as "not clickable" on every button in the admin - the shared Button
+ * component, dialog actions, the editor toolbar, the theme toggle, toasts.
+ * One rule here covers all of them, including ones added later. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 html {
   background-color: var(--color-paper-muted);
 }

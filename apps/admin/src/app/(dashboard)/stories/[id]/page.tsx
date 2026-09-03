@@ -30,7 +30,7 @@ export default async function EditStoryPage({ params }: EditStoryPageProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader description={`/story/${article.slug}/${article.id}`} title="Edit Story" />
+      <PageHeader description={`/story/${article.slug}`} title="Edit Story" />
 
       {categories.errorMessage ? (
         <RequestError message={categories.errorMessage} what="Categories" />

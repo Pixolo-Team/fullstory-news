@@ -66,8 +66,10 @@ function escapeXml(value: string): string {
  * @param context - Astro endpoint context
  * @returns XML sitemap response
  */
-export const GET: APIRoute = async ({ site }) => {
-  const origin = (site ?? new URL('http://localhost:4321')).origin;
+export const GET: APIRoute = async ({ url }) => {
+  // url.origin reflects the request that actually reached this endpoint, so
+  // it is right regardless of whether PUBLIC_SITE_URL is set on the host.
+  const origin = url.origin;
 
   const [categories, articles] = await Promise.all([
     getCategoriesRequest(),
@@ -78,7 +80,7 @@ export const GET: APIRoute = async ({ site }) => {
     ...STATIC_PATHS.map((path) => ({ loc: `${origin}${path}`, lastmod: undefined })),
     ...categories.map((category) => ({ loc: `${origin}/${category.slug}`, lastmod: undefined })),
     ...articles.map((article) => ({
-      loc: `${origin}/story/${article.slug}/${article.id}`,
+      loc: `${origin}/story/${article.slug}`,
       lastmod: article.updatedAt,
     })),
   ];

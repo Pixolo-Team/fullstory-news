@@ -73,6 +73,26 @@ export async function createArticleAction(
     }
   }
 
+  // Creating an article never sent the Instagram field to the backend - only
+  // updateArticleAction did - so a reel added while writing a brand-new Story
+  // was silently dropped. The create endpoint has nowhere to take Instagram
+  // URLs itself, so this is the same second call updateArticleAction makes.
+  const instagramUrls = parseListFieldService(formData.get('instagramUrls'));
+  if (instagramUrls.length > 0) {
+    const instagramResponse = await sendBackendMutationRequest(`/api/articles/${articleId}/instagram`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ urls: instagramUrls }),
+    });
+
+    if (instagramResponse.status === 'error') {
+      return {
+        errorMessage: `Story was created but the Instagram links failed: ${instagramResponse.message}`,
+        successMessage: null,
+      };
+    }
+  }
+
   revalidatePath('/stories');
   redirect(`/stories/${articleId}?saved=1`);
 }

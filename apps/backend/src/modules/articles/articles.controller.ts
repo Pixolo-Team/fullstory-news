@@ -89,31 +89,30 @@ export class ArticlesController {
   }
 
   /**
-   * Returns one published article and records a view.
-   * @param slug - Public article slug
-   * @param id - Article id
-   * @returns Full article detail
-   */
-  @Get(':slug/:id')
-  @ApiOperation({ summary: 'Get one published article by slug and id' })
-  async getPublishedArticleBySlug(
-    @Param('slug') slug: string,
-    @Param('id') id: string,
-  ): Promise<ArticleDetailData> {
-    return this.articlesService.getPublishedArticleBySlugService(slug, id);
-  }
-
-  /**
    * Returns one article for admin editing without recording a view.
+   *
+   * Under "id/:id" rather than a bare ":id", so this cannot collide with the
+   * public ":slug" route below — both are single-segment GETs on /articles,
+   * and Nest resolves them in declaration order otherwise.
+   *
    * @param id - Article id
-   * @param request - Express request containing the session cookie
-   * @param response - Express response used when tokens rotate
    * @returns Full article detail
    */
-  @Get(':id')
+  @Get('id/:id')
   @ApiOperation({ summary: 'Get one article for admin editing' })
   async getArticleById(@Param('id') id: string): Promise<ArticleDetailData> {
     return this.articlesService.getArticleByIdService(id);
+  }
+
+  /**
+   * Returns one published article by its slug and records a view.
+   * @param slug - Public article slug, unique per article
+   * @returns Full article detail
+   */
+  @Get(':slug')
+  @ApiOperation({ summary: 'Get one published article by slug' })
+  async getPublishedArticleBySlug(@Param('slug') slug: string): Promise<ArticleDetailData> {
+    return this.articlesService.getPublishedArticleBySlugService(slug);
   }
 
   /**

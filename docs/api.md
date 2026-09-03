@@ -16,7 +16,7 @@ It maps each reader-facing route to the backend endpoints it depends on.
 |---|---|---|
 | `/` | Home | `GET /categories`, `GET /articles/trending`, `GET /articles/latest`, `GET /articles/by-category` |
 | `/[category]` | Category listing | `GET /categories/:slug`, `GET /articles?category=<slug>&page=<n>&limit=<n>` |
-| `/story/[slug]/[id]` | Story | `GET /articles/:slug/:id`, `GET /articles/:id/similar`, `GET /categories` |
+| `/story/[slug]` | Story | `GET /articles/:slug`, `GET /articles/:id/similar`, `GET /categories` |
 | `/search` | Search | `GET /search?q=<query>&page=<n>&limit=<n>`, `GET /categories` |
 | `/privacy-policy` | Static page | no API |
 | `/terms` | Static page | no API |
@@ -295,7 +295,7 @@ Frontend use:
 - `items` should contain the same article list shape as other listing endpoints
 - Category order should follow the category source order, with empty categories omitted
 
-### `GET /articles/:slug/:id`
+### `GET /articles/:slug`
 
 Auth: none. Published only. Records a view.
 
@@ -343,9 +343,11 @@ Frontend use:
 - `Similar Stories` section on the Story page
 - Omit the whole section when the response is empty
 
-### `GET /articles/:id`
+### `GET /articles/id/:id`
 
-Auth: none. Drafts included. Does **not** record a view.
+Auth: none. Drafts included. Does **not** record a view. Under `id/:id`
+rather than a bare `:id` so it cannot collide with the public `:slug` route
+above — both are single-segment GETs on `/articles`.
 
 Response `data`: full article.
 

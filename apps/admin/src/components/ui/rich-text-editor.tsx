@@ -4,13 +4,17 @@
 import type { Editor } from '@tiptap/react';
 import type { ReactNode } from 'react';
 
+// SERVICES //
+import { uploadImageAction } from '@/app/actions/media.actions';
+import { useToast } from '@/components/ui/toast';
+
 // LIBRARIES //
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 import { Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor } from '@tiptap/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 interface RichTextEditorProps {
   /** Form field the HTML is submitted under. */
@@ -128,6 +132,15 @@ interface EditorToolbarProps {
  * Renders the formatting controls above the editor.
  */
 function EditorToolbar({ editor }: EditorToolbarProps) {
+  // Define Context
+  const { showToast } = useToast();
+
+  // Define Refs
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Define States
+  const [isUploadingImage, setIsUploadingImage] = useState<boolean>(false);
+
   /**
    * Prompts for a URL and applies it to the current selection.
    */
@@ -148,14 +161,28 @@ function EditorToolbar({ editor }: EditorToolbarProps) {
   };
 
   /**
-   * Prompts for an image URL and inserts it.
+   * Uploads the chosen file and inserts it at the current cursor position.
    */
-  const applyImage = (): void => {
-    const url = window.prompt('Image URL', 'https://');
+  const uploadAndInsertImage = async (file: File): Promise<void> => {
+    setIsUploadingImage(true);
 
-    if (url && url.trim() !== '') {
-      editor.chain().focus().setImage({ src: url.trim() }).run();
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const result = await uploadImageAction(formData);
+
+    setIsUploadingImage(false);
+
+    if (result.errorMessage || !result.url) {
+      showToast({
+        title: 'Upload failed',
+        description: result.errorMessage ?? 'The image could not be uploaded.',
+        tone: 'error',
+      });
+      return;
     }
+
+    editor.chain().focus().setImage({ src: result.url }).run();
   };
 
   return (
@@ -226,9 +253,24 @@ function EditorToolbar({ editor }: EditorToolbarProps) {
         Link
       </ToolbarButton>
 
-      <ToolbarButton label="Image" onClick={applyImage}>
-        Image
+      <ToolbarButton label="Upload image" onClick={() => imageInputRef.current?.click()}>
+        {isUploadingImage ? 'Uploading...' : 'Image'}
       </ToolbarButton>
+
+      <input
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+
+          if (file) {
+            void uploadAndInsertImage(file);
+          }
+        }}
+        ref={imageInputRef}
+        type="file"
+      />
 
       <span aria-hidden="true" className="mx-1 h-5 w-px bg-rule" />
 

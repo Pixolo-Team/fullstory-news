@@ -159,27 +159,26 @@ export class ArticlesService {
   }
 
   /**
-   * Returns one published article and records a view.
-   * @param slug - Public article slug
-   * @param id - Article id
+   * Returns one published article by its slug and records a view.
+   * @param slug - Public article slug, unique per article
    * @returns Full article detail
    */
-  async getPublishedArticleBySlugService(slug: string, id: string): Promise<ArticleDetailData> {
+  async getPublishedArticleBySlugService(slug: string): Promise<ArticleDetailData> {
     try {
-      const article = await this.articlesRepository.findPublishedArticleBySlugRepository(slug, id);
+      const article = await this.articlesRepository.findPublishedArticleBySlugRepository(slug);
 
       if (!article) {
-        throw new NotFoundError('Article', id);
+        throw new NotFoundError('Article', slug);
       }
 
       // Counting a view must never stop a reader reading. A failure here is
       // logged and swallowed, rather than turning a successful read into a 503.
       try {
-        await this.articlesRepository.recordArticleViewRepository(id);
+        await this.articlesRepository.recordArticleViewRepository(article.id);
         article.viewCount += 1;
       } catch (viewError) {
         this.logger.warn(
-          `Failed to record a view for article ${id}: ${
+          `Failed to record a view for article ${article.id}: ${
             viewError instanceof Error ? viewError.message : 'unknown error'
           }`,
         );
@@ -193,6 +192,28 @@ export class ArticlesService {
 
       throw new DependencyError('Failed to load the article');
     }
+  }
+
+  /**
+   * Appends "-2", "-3", ... to a slug until it does not collide with another
+   * article. Stories CRUD has no editorial review step, so two Stories with
+   * the same headline is routine, not an error the caller should have to
+   * handle by hand.
+   *
+   * @param baseSlug - Slug derived from the caller's input
+   * @param excludeId - Article id to ignore, when resolving during an update
+   * @returns A slug guaranteed unique at the time of the check
+   */
+  private async ensureUniqueSlugService(baseSlug: string, excludeId?: string): Promise<string> {
+    let candidate = baseSlug;
+    let suffix = 2;
+
+    while (await this.articlesRepository.slugExistsRepository(candidate, excludeId)) {
+      candidate = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+
+    return candidate;
   }
 
   /**
@@ -246,11 +267,13 @@ export class ArticlesService {
       throw new ValidationError('No author exists to attribute this Story to');
     }
 
+    const uniqueSlug = await this.ensureUniqueSlugService(toSlugUtil(payload.slug ?? payload.headline));
+
     try {
       return await this.articlesRepository.createArticleRepository({
         headline: payload.headline.trim(),
         sub_headline: payload.subHeadline?.trim() ?? null,
-        slug: toSlugUtil(payload.slug ?? payload.headline),
+        slug: uniqueSlug,
         category_id: payload.categoryId,
         author_id: resolvedAuthor.id,
         hero_image_url: payload.heroImageUrl ?? null,
@@ -300,7 +323,9 @@ export class ArticlesService {
 
     if (payload.headline !== undefined) updatePayload.headline = payload.headline.trim();
     if (payload.subHeadline !== undefined) updatePayload.sub_headline = payload.subHeadline?.trim() ?? null;
-    if (payload.slug !== undefined) updatePayload.slug = toSlugUtil(payload.slug);
+    if (payload.slug !== undefined) {
+      updatePayload.slug = await this.ensureUniqueSlugService(toSlugUtil(payload.slug), id);
+    }
     if (payload.categoryId !== undefined) updatePayload.category_id = payload.categoryId;
     if (payload.heroImageUrl !== undefined) updatePayload.hero_image_url = payload.heroImageUrl ?? null;
     if (payload.contentHtml !== undefined) updatePayload.content_html = sanitizeHtmlUtil(payload.contentHtml);

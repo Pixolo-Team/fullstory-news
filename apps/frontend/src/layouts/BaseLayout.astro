@@ -31,7 +31,11 @@ const { title, description, image, noindex = false, article } = Astro.props;
 const categories = await getCategoriesRequest();
 
 const siteName = 'Full Story';
-const siteOrigin = (Astro.site ?? Astro.url).origin;
+// Astro.url.origin reflects the request that actually reached this page, so
+// it is right in every environment without depending on PUBLIC_SITE_URL
+// being set on the host. Astro.site alone previously sent canonical/OG/share
+// URLs to localhost whenever that env var was missing.
+const siteOrigin = Astro.url.origin;
 
 // Canonical drops query strings (page=, q=) so paginated and searched views
 // of the same page do not read as separate URLs to a crawler.
