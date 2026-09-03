@@ -1,7 +1,5 @@
 ---
 import { Image } from 'astro:assets';
-import fullStoryLogoLight from '@/assets/branding/full-story-logo-light.png';
-import fullStoryLogo from '@/assets/branding/full-story-logo.png';
 import type { CategoryData } from '@/types/api.types';
 
 interface Props {
@@ -148,20 +146,20 @@ const iconStyle =
         <Image
           class="brand-logo"
           data-variant="light"
-          src={fullStoryLogo}
+          src="/images/full-story-logo.png"
           alt="Full Story"
-          widths={[320, 640, 960, 1280]}
-          sizes="160px"
-          style="height:2.5rem;width:auto"
+          width={1280}
+          height={456}
+          style="height:2.5rem;width:auto;max-width:none"
         />
         <Image
           class="brand-logo"
           data-variant="dark"
-          src={fullStoryLogoLight}
+          src="/images/full-story-logo-light.png"
           alt=""
-          widths={[320, 640, 960, 1280]}
-          sizes="160px"
-          style="height:2.5rem;width:auto"
+          width={1280}
+          height={456}
+          style="height:2.5rem;width:auto;max-width:none"
         />
       </a>
     </div>
