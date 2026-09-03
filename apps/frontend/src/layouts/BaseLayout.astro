@@ -77,19 +77,7 @@ const structuredData = article
     <link rel="canonical" href={canonicalUrl} />
     <meta name="theme-color" content="#1a4fd6" />
 
-    <link
-      rel="icon"
-      href="/favicon-light.svg"
-      type="image/svg+xml"
-      media="(prefers-color-scheme: light)"
-    />
-    <link
-      rel="icon"
-      href="/favicon-dark.svg"
-      type="image/svg+xml"
-      media="(prefers-color-scheme: dark)"
-    />
-    <link id="site-favicon" rel="icon" href="/favicon-light.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="alternate icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -122,6 +110,19 @@ const structuredData = article
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
     <link rel="preconnect" href="/" />
+    <script is:inline>
+      const STORAGE_KEY = 'fs-theme';
+
+      try {
+        const storedTheme = localStorage.getItem(STORAGE_KEY);
+        if (storedTheme === 'light' || storedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', storedTheme);
+        }
+      } catch {
+        // Private browsing can throw on read. In that case the OS preference
+        // remains the fallback until the page script attaches.
+      }
+    </script>
     <link rel="stylesheet" href="/ds/tokens/fonts.css" />
     <link rel="stylesheet" href="/ds/tokens/core.css" />
     <link rel="stylesheet" href="/ds/tokens/palette.css" />
@@ -450,7 +451,6 @@ const structuredData = article
       function applyTheme(theme: string): void {
         document.documentElement.setAttribute('data-theme', theme);
         syncToggleIcon(theme === 'dark');
-        syncFavicon(theme === 'dark');
       }
 
       // The icon shows the CURRENT theme: a sun while light, a moon while dark.
@@ -470,25 +470,16 @@ const structuredData = article
         return window.matchMedia('(prefers-color-scheme: dark)').matches;
       }
 
-      function syncFavicon(isDark: boolean): void {
-        const favicon = document.getElementById('site-favicon');
-        if (!(favicon instanceof HTMLLinkElement)) return;
-
-        favicon.href = isDark ? '/favicon-dark.svg' : '/favicon-light.svg';
-      }
-
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored === 'light' || stored === 'dark') {
           applyTheme(stored);
         } else {
           syncToggleIcon(prefersDark());
-          syncFavicon(prefersDark());
         }
       } catch {
         // Private browsing can throw on read; the OS preference still applies.
         syncToggleIcon(prefersDark());
-        syncFavicon(prefersDark());
       }
 
       document.getElementById('theme-toggle')?.addEventListener('click', () => {
