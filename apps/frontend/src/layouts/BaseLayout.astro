@@ -348,6 +348,15 @@ const structuredData = article
           color: var(--color-fg);
         }
 
+        /* The active underline is sized to the word on the desktop nav, where
+           .nav-link is only as wide as its text. In the dropdown each link is
+           a full-width row, so that same underline stretches across the whole
+           row instead of sitting under the word. The row's own border and the
+           accent text color already show which page is active here. */
+        [data-primary-nav] .nav-link.is-active::after {
+          display: none;
+        }
+
         header nav {
           scrollbar-width: none;
         }
