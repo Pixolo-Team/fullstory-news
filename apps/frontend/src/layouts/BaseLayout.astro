@@ -77,7 +77,19 @@ const structuredData = article
     <link rel="canonical" href={canonicalUrl} />
     <meta name="theme-color" content="#1a4fd6" />
 
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="icon"
+      href="/favicon-light.svg"
+      type="image/svg+xml"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      href="/favicon-dark.svg"
+      type="image/svg+xml"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link id="site-favicon" rel="icon" href="/favicon-light.svg" type="image/svg+xml" />
     <link rel="alternate icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -261,6 +273,13 @@ const structuredData = article
       }
 
       @media (max-width: 640px) {
+        [data-nav-row] {
+          position: relative;
+          gap: var(--space-2) !important;
+          padding-top: var(--space-2);
+          padding-bottom: var(--space-2);
+        }
+
         [data-nav-toggle] {
           display: inline-flex;
           align-items: center;
@@ -277,14 +296,10 @@ const structuredData = article
           color: var(--color-fg);
         }
 
-        /* The open menu overlays the page instead of pushing it down. */
-        [data-nav-row] {
-          position: relative;
-        }
-
         /* Search keeps its place on the right of the same row. */
         [data-nav-row] > a[href='/search'] {
           order: 2;
+          padding-inline: 0 !important;
         }
 
         /* The menu drops below the row, full width, when opened. */
@@ -350,6 +365,17 @@ const structuredData = article
           font-size: var(--text-micro);
           justify-content: flex-start !important;
           row-gap: var(--space-1);
+          column-gap: 4px;
+          text-wrap: pretty;
+        }
+
+        #dateline-day,
+        .remarque-masthead-dateline .remarque-dot:first-of-type {
+          display: none;
+        }
+
+        .remarque-masthead-dateline .remarque-dot:nth-of-type(2) {
+          display: none;
         }
 
         /* One left edge for the strip: copyright and wordmark. */
@@ -387,6 +413,16 @@ const structuredData = article
 
       /* Story body and prose need the full width on a phone. */
       @media (max-width: 560px) {
+        [data-nav-row] > a[href='/search'] span {
+          display: none;
+        }
+
+        [data-nav-row] > a[href='/search'] {
+          min-height: 40px;
+          min-width: 40px;
+          justify-content: center;
+        }
+
         .remarque-prose,
         .remarque-post-header {
           max-width: 100% !important;
@@ -414,6 +450,7 @@ const structuredData = article
       function applyTheme(theme: string): void {
         document.documentElement.setAttribute('data-theme', theme);
         syncToggleIcon(theme === 'dark');
+        syncFavicon(theme === 'dark');
       }
 
       // The icon shows the CURRENT theme: a sun while light, a moon while dark.
@@ -433,16 +470,25 @@ const structuredData = article
         return window.matchMedia('(prefers-color-scheme: dark)').matches;
       }
 
+      function syncFavicon(isDark: boolean): void {
+        const favicon = document.getElementById('site-favicon');
+        if (!(favicon instanceof HTMLLinkElement)) return;
+
+        favicon.href = isDark ? '/favicon-dark.svg' : '/favicon-light.svg';
+      }
+
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored === 'light' || stored === 'dark') {
           applyTheme(stored);
         } else {
           syncToggleIcon(prefersDark());
+          syncFavicon(prefersDark());
         }
       } catch {
         // Private browsing can throw on read; the OS preference still applies.
         syncToggleIcon(prefersDark());
+        syncFavicon(prefersDark());
       }
 
       document.getElementById('theme-toggle')?.addEventListener('click', () => {

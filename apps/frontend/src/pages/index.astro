@@ -69,12 +69,12 @@ const trendingSecondary = trending.slice(1, 3);
             {latest.map((article, index) => (
               <article
                 class:list={[
-                  'grid items-start gap-x-6 gap-y-3 py-5 md:grid-cols-[7.5rem_minmax(0,1fr)_11rem]',
+                  'grid items-start gap-x-6 gap-y-3 py-5 sm:grid-cols-[minmax(0,1fr)_10rem] md:grid-cols-[7.5rem_minmax(0,1fr)_11rem]',
                   index < latest.length - 1 && 'border-b',
                 ]}
                 style="border-bottom-width:var(--border-width);border-color:var(--color-border)"
               >
-                <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 md:block">
+                <div class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 sm:col-span-2 md:col-span-1 md:block">
                   <p class="remarque-entry-kicker m-0">
                     <span class="remarque-entry-section">{article.category.name}</span>
                   </p>
@@ -86,9 +86,9 @@ const trendingSecondary = trending.slice(1, 3);
                   </p>
                 </div>
 
-                <div class="flex min-w-0 flex-col gap-2">
+                <div class="flex min-w-0 flex-col gap-2 sm:order-2 md:order-none">
                   <h3
-                    class="m-0 text-balance text-[1.55rem] font-medium leading-[1.18]"
+                    class="m-0 text-balance text-[clamp(1.25rem,6vw,1.55rem)] font-medium leading-[1.18]"
                     style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
                   >
                     <a class="story-link" href={buildStoryPathService(article)}>
@@ -110,10 +110,14 @@ const trendingSecondary = trending.slice(1, 3);
 
                 {
                   article.heroImageUrl && (
-                    <a class="block no-underline md:justify-self-end" data-thumb href={buildStoryPathService(article)}>
+                    <a
+                      class="block no-underline sm:order-1 sm:justify-self-end md:order-none md:justify-self-end"
+                      data-thumb
+                      href={buildStoryPathService(article)}
+                    >
                       <img
                         alt=""
-                        class="block aspect-[4/3] w-full max-w-[11rem] rounded-sm border object-cover"
+                        class="block aspect-[4/3] w-full rounded-sm border object-cover sm:w-40 md:max-w-[11rem]"
                         loading="lazy"
                         src={article.heroImageUrl}
                         style="border-width:var(--border-width);border-color:var(--color-border)"

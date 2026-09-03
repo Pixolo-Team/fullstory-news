@@ -1,4 +1,7 @@
 ---
+import { Image } from 'astro:assets';
+import fullStoryLogoLight from '@/assets/branding/full-story-logo-light.png';
+import fullStoryLogo from '@/assets/branding/full-story-logo.png';
 import type { CategoryData } from '@/types/api.types';
 
 interface Props {
@@ -21,6 +24,27 @@ const socialLinks = [
 const iconStyle =
   'color:var(--color-fg-muted);display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px';
 ---
+
+<style>
+  /* Wordmark art needs the off-white variant on the dark theme (see Header). */
+  .brand-logo[data-variant='dark'] {
+    display: none;
+  }
+  :global([data-theme='dark']) .brand-logo[data-variant='light'] {
+    display: none;
+  }
+  :global([data-theme='dark']) .brand-logo[data-variant='dark'] {
+    display: block;
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .brand-logo[data-variant='light'] {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .brand-logo[data-variant='dark'] {
+      display: block;
+    }
+  }
+</style>
 
 <footer class="mt-9 border-t" style="border-color:var(--color-border);border-top-width:var(--border-width)">
   <div class="container mx-auto px-4 py-8 sm:px-5">
@@ -117,9 +141,29 @@ const iconStyle =
 
       <a
         href="/"
-        style="font-family:var(--font-display);font-size:1.875rem;line-height:1.1;letter-spacing:var(--tracking-title);color:var(--color-fg);text-decoration:none;font-variant-caps:all-small-caps;white-space:nowrap"
-        >Full Story</a
+        class="brand-mark"
+        aria-label="Full Story - home"
+        style="display:inline-flex;align-items:center;text-decoration:none;white-space:nowrap"
       >
+        <Image
+          class="brand-logo"
+          data-variant="light"
+          src={fullStoryLogo}
+          alt="Full Story"
+          widths={[320, 640, 960, 1280]}
+          sizes="160px"
+          style="height:2.5rem;width:auto"
+        />
+        <Image
+          class="brand-logo"
+          data-variant="dark"
+          src={fullStoryLogoLight}
+          alt=""
+          widths={[320, 640, 960, 1280]}
+          sizes="160px"
+          style="height:2.5rem;width:auto"
+        />
+      </a>
     </div>
   </div>
 </footer>
