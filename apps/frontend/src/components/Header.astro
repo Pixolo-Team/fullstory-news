@@ -2,16 +2,14 @@
 import { Image } from 'astro:assets';
 import type { CategoryData } from '@/types/api.types';
 import { getWeatherRequest } from '@/requests/get-weather.request';
-import fullStoryLogoLight from '@/assets/branding/full-story-logo-light.png';
-import fullStoryLogo from '@/assets/branding/full-story-logo.png';
 
 interface Props {
   categories: CategoryData[];
 }
 
 const { categories } = Astro.props;
-
 const weather = await getWeatherRequest();
+const pathname = Astro.url.pathname;
 ---
 
 <style>
@@ -41,6 +39,48 @@ const weather = await getWeatherRequest();
     width: min(100%, 12.5rem);
   }
 
+  .search-shell {
+    display: none;
+    width: 100%;
+    padding: 0 1rem 1rem;
+  }
+
+  .search-shell[data-open='true'] {
+    display: block;
+  }
+
+  .search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin: 0 auto;
+    padding-top: 0.75rem;
+    border-top: var(--border-width) solid var(--color-border);
+  }
+
+  .search-input {
+    flex: 1 1 16rem;
+    min-width: 0;
+  }
+
+  .search-input:focus-visible {
+    outline: none;
+    border-color: var(--color-fg);
+  }
+
+  .nav-link.is-active {
+    color: var(--color-accent);
+  }
+
+  .nav-link.is-active::after {
+    content: '';
+    display: block;
+    width: 100%;
+    border-bottom: var(--border-width) solid var(--color-accent);
+    transform: translateY(0.25rem);
+  }
+
   @media (max-width: 640px) {
     .masthead-row {
       flex-direction: row;
@@ -67,6 +107,16 @@ const weather = await getWeatherRequest();
       justify-content: flex-end;
       gap: 0.625rem;
     }
+
+    .search-shell {
+      padding-inline: 1rem;
+      padding-bottom: 0.75rem;
+    }
+
+    .search-form {
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+    }
   }
 
   @media (max-width: 420px) {
@@ -88,20 +138,20 @@ const weather = await getWeatherRequest();
         <Image
           class="brand-logo"
           data-variant="light"
-          src={fullStoryLogo}
+          src="/images/full-story-logo.png"
           alt="Full Story"
-          widths={[320, 640, 960, 1280]}
-          sizes="(max-width: 640px) 224px, 256px"
-          style="height:auto;width:100%"
+          width={1280}
+          height={456}
+          style="height:auto;width:100%;max-width:100%"
         />
         <Image
           class="brand-logo"
           data-variant="dark"
-          src={fullStoryLogoLight}
+          src="/images/full-story-logo-light.png"
           alt=""
-          widths={[320, 640, 960, 1280]}
-          sizes="(max-width: 640px) 224px, 256px"
-          style="height:auto;width:100%"
+          width={1280}
+          height={456}
+          style="height:auto;width:100%;max-width:100%"
         />
       </a>
 
@@ -212,7 +262,7 @@ const weather = await getWeatherRequest();
 
       <nav class="flex min-w-0 flex-1 gap-2 overflow-x-auto" data-primary-nav id="primary-nav">
         <a
-          class="nav-link"
+          class:list={['nav-link', pathname === '/' && 'is-active']}
           href="/"
           style="white-space:nowrap;font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);font-size:var(--text-body)"
           >Home</a
@@ -220,7 +270,7 @@ const weather = await getWeatherRequest();
         {
           categories.map((category) => (
             <a
-              class="nav-link"
+              class:list={['nav-link', pathname === `/${category.slug}` && 'is-active']}
               href={`/${category.slug}`}
               style="white-space:nowrap;font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);font-size:var(--text-body)"
             >
@@ -230,10 +280,14 @@ const weather = await getWeatherRequest();
         }
       </nav>
 
-      <a
+      <button
+        aria-controls="header-search"
+        aria-expanded="false"
+        aria-label="Open search"
         class="nav-link inline-flex shrink-0 items-center gap-2 whitespace-nowrap"
-        href="/search"
+        data-search-toggle
         style="font-family:var(--font-mono);font-size:var(--text-meta)"
+        type="button"
       >
         <svg
           aria-hidden="true"
@@ -250,7 +304,19 @@ const weather = await getWeatherRequest();
           <path d="M15.5 15.5 21 21"></path>
         </svg>
         <span>Search</span>
-      </a>
+      </button>
+    </div>
+    <div class="container mx-auto search-shell px-4 sm:px-6" data-search-shell data-open="false">
+      <form action="/search" class="search-form" data-search-form id="header-search" method="get">
+        <input
+          aria-label="Search Stories"
+          class="remarque-input search-input"
+          data-search-input
+          name="q"
+          placeholder="Search Stories"
+          type="search"
+        />
+      </form>
     </div>
   </div>
 </header>
@@ -287,6 +353,10 @@ const weather = await getWeatherRequest();
   // changes, so there is one set of links and one source of truth.
   const navToggle = document.getElementById('nav-toggle');
   const primaryNav = document.getElementById('primary-nav');
+  const searchToggle = document.querySelector<HTMLButtonElement>('[data-search-toggle]');
+  const searchShell = document.querySelector<HTMLElement>('[data-search-shell]');
+  const searchInput = document.querySelector<HTMLInputElement>('[data-search-input]');
+  const searchForm = document.querySelector<HTMLFormElement>('[data-search-form]');
 
   navToggle?.addEventListener('click', () => {
     const isOpen = primaryNav?.getAttribute('data-open') === 'true';
@@ -307,6 +377,28 @@ const weather = await getWeatherRequest();
     if ((event.target as HTMLElement).closest('a')) {
       primaryNav.setAttribute('data-open', 'false');
       navToggle?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  searchToggle?.addEventListener('click', () => {
+    const isOpen = searchShell?.getAttribute('data-open') === 'true';
+    const nextOpen = !isOpen;
+
+    searchShell?.setAttribute('data-open', String(nextOpen));
+    searchToggle.setAttribute('aria-expanded', String(nextOpen));
+    searchToggle.setAttribute('aria-label', nextOpen ? 'Close search' : 'Open search');
+
+    if (nextOpen) {
+      searchInput?.focus();
+    } else {
+      searchInput?.blur();
+    }
+  });
+
+  searchForm?.addEventListener('submit', (event) => {
+    if (!searchInput?.value.trim()) {
+      event.preventDefault();
+      searchInput?.focus();
     }
   });
 

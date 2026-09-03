@@ -20,7 +20,7 @@ const { label, href, linkLabel = 'View all ->' } = Astro.props;
       <a
         href={href}
         class="link-accent whitespace-nowrap"
-        style="font-family:var(--font-mono);font-size:var(--text-meta)"
+        style="font-family:var(--font-mono);font-size:var(--text-meta);text-decoration:none;border-bottom:var(--border-width) solid currentColor;padding-bottom:0.1rem"
       >
         {linkLabel}
       </a>

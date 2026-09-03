@@ -12,17 +12,23 @@ import {
 
 /** Story cards shown per Category block on the home page. */
 const CATEGORY_BLOCK_SIZE = 3;
+const EXCLUDED_TRENDING_STORY_SLUG = 'river-cap-two-years-one-gauge';
+const TRENDING_LAYOUT_SIZE = 6;
 
 
 const [trending, latest, categoryGroups] = await Promise.all([
-  getTrendingArticlesRequest(3),
+  getTrendingArticlesRequest(TRENDING_LAYOUT_SIZE + 1),
   getLatestArticlesRequest(8),
   getArticlesByCategoryRequest(CATEGORY_BLOCK_SIZE + 1),
 ]);
 
 const hasAnything = trending.length > 0 || latest.length > 0 || categoryGroups.length > 0;
-const trendingLead = trending[0];
-const trendingSecondary = trending.slice(1, 3);
+const trendingStories = trending
+  .filter((article) => article.slug !== EXCLUDED_TRENDING_STORY_SLUG)
+  .slice(0, TRENDING_LAYOUT_SIZE);
+const trendingLead = trendingStories[0];
+const trendingRightColumn = trendingStories.slice(1, 4);
+const trendingBottomRow = trendingStories.slice(4, 6);
 ---
 
 <BaseLayout
@@ -39,23 +45,48 @@ const trendingSecondary = trending.slice(1, 3);
     }
 
     {
-      trending.length > 0 && (
+      trendingStories.length > 0 && (
         <section>
           <SectionHeading label="Trending stories" />
           <div
-            class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.8fr)_minmax(18rem,0.95fr)] lg:items-start"
+            class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(18rem,1fr)] lg:items-start"
             data-grid="trending"
           >
-            {trendingLead && (
-              <div class="min-w-0">
-                <StoryCard article={trendingLead} size="large" />
-              </div>
-            )}
-            <div class="grid gap-5 lg:grid-rows-2">
-              {trendingSecondary.map((article) => (
-                <StoryCard article={article} />
-              ))}
+            <div class="grid gap-5">
+              {trendingLead && (
+                <div class="min-w-0">
+                  <StoryCard
+                    article={trendingLead}
+                    imageClassName="aspect-[16/9] lg:aspect-[5/2] xl:aspect-[21/8]"
+                    size="large"
+                  />
+                </div>
+              )}
+
+              {
+                trendingBottomRow.length > 0 && (
+                  <div class="grid gap-5 sm:grid-cols-2">
+                    {trendingBottomRow.map((article) => (
+                      <StoryCard article={article} />
+                    ))}
+                  </div>
+                )
+              }
             </div>
+
+            {
+              trendingRightColumn.length > 0 && (
+                <div class="grid gap-5 lg:auto-rows-fr">
+                  {trendingRightColumn.map((article) => (
+                    <StoryCard
+                      article={article}
+                      imageClassName="aspect-[3/2] lg:aspect-[5/2] xl:aspect-[21/8]"
+                      wrapperClassName="h-full"
+                    />
+                  ))}
+                </div>
+              )
+            }
           </div>
         </section>
       )

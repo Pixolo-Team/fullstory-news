@@ -7,14 +7,24 @@ interface Props {
   article: ArticleData;
   size?: 'large' | 'small';
   showSection?: boolean;
+  imageClassName?: string;
+  wrapperClassName?: string;
 }
 
-const { article, size = 'small', showSection = true } = Astro.props;
+const {
+  article,
+  size = 'small',
+  showSection = true,
+  imageClassName,
+  wrapperClassName,
+} = Astro.props;
 
 const href = buildStoryPathService(article);
+const imageSizeClassName =
+  imageClassName ?? (size === 'large' ? 'aspect-[16/9] xl:aspect-[16/7]' : 'aspect-[3/2]');
 ---
 
-<article class="flex flex-col gap-3">
+<article class:list={['flex flex-col gap-3', wrapperClassName]}>
   {
     article.heroImageUrl && (
       <a class="block no-underline" data-thumb href={href}>
@@ -22,7 +32,7 @@ const href = buildStoryPathService(article);
           alt=""
           class:list={[
             'block w-full rounded-sm border object-cover',
-            size === 'large' ? 'aspect-[16/9] xl:aspect-[16/7]' : 'aspect-[3/2]',
+            imageSizeClassName,
           ]}
           loading="lazy"
           src={article.heroImageUrl}

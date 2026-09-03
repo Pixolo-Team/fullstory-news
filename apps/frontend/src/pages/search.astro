@@ -21,19 +21,26 @@ const resultLine = results
 
 <BaseLayout description="Search Full Story" noindex title="Search - Full Story">
   <div class="container mx-auto px-4 py-10 sm:px-5 md:py-14">
+    <style>
+      .search-page-input:focus-visible {
+        outline: none;
+        border-color: var(--color-fg);
+      }
+    </style>
+
     <h1 class="text-title mb-6 mt-0">Search</h1>
 
     <form action="/search" class="flex flex-wrap items-center gap-3" method="get" role="search">
       <input
         aria-label="Search Stories"
-        class="remarque-input"
+        class="remarque-input search-page-input"
         name="q"
         placeholder="Search Stories"
         style="flex:1 1 18rem;min-width:0"
         type="search"
         value={query}
       />
-      <button class="remarque-button h-11" data-variant="primary" type="submit">Search</button>
+      <button class="remarque-button remarque-button--primary h-11" type="submit">Search</button>
     </form>
 
     {
