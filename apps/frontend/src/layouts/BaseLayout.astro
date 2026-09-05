@@ -33,10 +33,14 @@ const categories = await getCategoriesRequest();
 const siteName = 'Full Story';
 const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
 const requestOrigin = Astro.url.origin;
+const configuredOrigin = configuredSiteUrl ? new URL(configuredSiteUrl).origin : null;
+const configuredHost = configuredOrigin ? new URL(configuredOrigin).hostname : '';
+const requestHost = new URL(requestOrigin).hostname;
+const localHosts = ['localhost', '127.0.0.1', '::1'];
 const siteOrigin =
-  configuredSiteUrl && !configuredSiteUrl.includes('localhost')
-    ? configuredSiteUrl
-    : requestOrigin.includes('localhost')
+  configuredOrigin && !localHosts.includes(configuredHost)
+    ? configuredOrigin
+    : localHosts.includes(requestHost)
       ? 'https://www.fullstorynews.com'
       : requestOrigin;
 
