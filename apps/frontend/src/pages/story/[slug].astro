@@ -15,12 +15,15 @@ if (!article) {
 }
 
 const similar = await getSimilarArticlesRequest(article.id, 3);
-
-// Astro.url.origin reflects the request that actually reached this page, so
-// it is right in every environment without depending on PUBLIC_SITE_URL
-// being set. Using Astro.site here previously sent readers a share link
-// pointing at localhost whenever that env var was missing on the host.
-const shareUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
+const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
+const requestOrigin = Astro.url.origin;
+const shareOrigin =
+  configuredSiteUrl && !configuredSiteUrl.includes('localhost')
+    ? configuredSiteUrl
+    : requestOrigin.includes('localhost')
+      ? 'https://www.fullstorynews.com'
+      : requestOrigin;
+const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
 ---
 
 <BaseLayout
@@ -67,6 +70,18 @@ const shareUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
         all: unset;
         font: inherit;
         color: inherit;
+      }
+
+      .instagram-reel-link {
+        color: var(--color-accent);
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 0.2em;
+        transition: color var(--motion-fast) var(--motion-easing);
+      }
+
+      .instagram-reel-link:hover {
+        color: var(--color-accent-hover);
       }
     </style>
 
@@ -141,40 +156,17 @@ const shareUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
           <p class="text-label mb-5 mt-0">
             Related Videos
           </p>
-          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div class="grid gap-3">
             {/* Never more than 3: a wall of reels overwhelms the Story it sits under. */}
-            {article.instagramPosts.slice(0, 3).map((post) => (
+            {article.instagramPosts.slice(0, 3).map((post, index) => (
               <a
-                class="group relative block aspect-[9/16] overflow-hidden rounded-md border"
+                class="instagram-reel-link"
                 href={post.instagramUrl}
                 rel="noopener noreferrer"
-                style="border-width:var(--border-width);border-color:var(--color-border)"
+                style="font-family:var(--font-mono);font-size:var(--text-meta)"
                 target="_blank"
               >
-                <img
-                  alt=""
-                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                  src={`https://picsum.photos/seed/ig-${post.id}/480/854`}
-                />
-
-                {/* Reel affordance: a centered play glyph, so the tile reads as video
-                    even though it is a thumbnail rather than a live embed. */}
-                <span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/25">
-                  <svg fill="none" height="40" viewBox="0 0 24 24" width="40">
-                    <circle cx="12" cy="12" fill="rgba(0,0,0,0.35)" r="11" />
-                    <path d="M9.5 7.5L17 12L9.5 16.5V7.5Z" fill="white" />
-                  </svg>
-                </span>
-
-                <span class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/80 to-transparent px-2.5 pb-2.5 pt-6 text-white">
-                  <svg fill="none" height="14" viewBox="0 0 24 24" width="14">
-                    <rect height="20" rx="5" stroke="white" stroke-width="1.8" width="20" x="2" y="2" />
-                    <circle cx="12" cy="12" r="4.2" stroke="white" stroke-width="1.8" />
-                    <circle cx="17.2" cy="6.8" fill="white" r="1.1" />
-                  </svg>
-                  <span class="font-mono text-[11px] tracking-wide">View reel</span>
-                </span>
+                View Instagram reel {index + 1}
               </a>
             ))}
           </div>
