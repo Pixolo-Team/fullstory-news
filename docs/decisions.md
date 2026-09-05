@@ -16,7 +16,7 @@ Decisions are recorded here rather than made silently in code. Anything marked
 | 7  | Rich text editor           | **Open**                              |
 | 8  | Image / media storage      | **Decided** — Supabase Storage        |
 | 9  | Search implementation      | **Decided** — Postgres `ILIKE`        |
-| 10 | Instagram integration      | **Open** — manual URLs preferred      |
+| 10 | Instagram integration      | **Decided** - plain link cards from manual URLs |
 | 11 | Backend deployment         | **Open**                              |
 | 12 | SEO scope                  | **Open**                              |
 | 13 | Client branding            | **Blocked** — awaiting assets         |
@@ -175,15 +175,25 @@ changing the frontend route contract.
 
 ---
 
-## 10. Instagram integration — Open (manual URLs preferred)
+## 10. Instagram integration — Decided: plain link cards from manual URLs
 
 For the MVP an admin pastes Instagram post/reel URLs onto an article
 (`article_instagram_post`). No API sync, no scraping.
 
-**Open:** how the URLs render on the article page — Instagram's official embed
-script (which adds third-party JavaScript and tracking to an otherwise light
-page) or a plain link card. A plain card is more in keeping with the simplicity
-USP.
+**Options considered:** plain link cards, Instagram iframe embeds, Instagram's
+official embed script, and generated thumbnail cards.
+
+**Decision:** render pasted Instagram URLs as plain link cards on the
+public Story page.
+
+**Reasoning:** generated thumbnails can look random or misleading, and plain
+link cards keep the page simple, predictable and light. Instagram embeds show
+the actual post, but they also include account chrome, likes, comments and
+third-party script or iframe behaviour that the site cannot fully control.
+
+**Consequence:** Story pages with Instagram posts show the saved URLs as cards
+and open Instagram in a new tab. No Instagram third-party script, iframe or
+generated thumbnail is loaded.
 
 ---
 

@@ -72,16 +72,35 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
         color: inherit;
       }
 
-      .instagram-reel-link {
-        color: var(--color-accent);
-        text-decoration: underline;
-        text-decoration-thickness: 1px;
-        text-underline-offset: 0.2em;
-        transition: color var(--motion-fast) var(--motion-easing);
+      .instagram-link-card {
+        display: flex;
+        min-height: 8rem;
+        flex-direction: column;
+        justify-content: center;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border: var(--border-width) solid var(--color-border);
+        border-radius: var(--radius-sm);
+        color: var(--color-fg);
+        text-decoration: none;
+        transition:
+          border-color var(--motion-fast) var(--motion-easing),
+          background-color var(--motion-fast) var(--motion-easing);
       }
 
-      .instagram-reel-link:hover {
-        color: var(--color-accent-hover);
+      .instagram-link-card:hover {
+        border-color: var(--color-border-bold);
+        background-color: var(--color-bg-subtle);
+      }
+
+      .instagram-link-card-title {
+        color: var(--color-fg);
+      }
+
+      .instagram-link-card-url {
+        display: block;
+        overflow-wrap: anywhere;
+        color: var(--color-muted);
       }
     </style>
 
@@ -156,17 +175,27 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
           <p class="text-label mb-5 mt-0">
             Related Videos
           </p>
-          <div class="grid gap-3">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Never more than 3: a wall of reels overwhelms the Story it sits under. */}
-            {article.instagramPosts.slice(0, 3).map((post, index) => (
+            {article.instagramPosts.slice(0, 3).map((post) => (
               <a
-                class="instagram-reel-link"
+                class="instagram-link-card"
                 href={post.instagramUrl}
                 rel="noopener noreferrer"
-                style="font-family:var(--font-mono);font-size:var(--text-meta)"
                 target="_blank"
               >
-                View Instagram reel {index + 1}
+                <span
+                  class="instagram-link-card-title"
+                  style="font-family:var(--font-display);font-size:1.15rem;line-height:var(--leading-title)"
+                >
+                  Open on Instagram
+                </span>
+                <span
+                  class="instagram-link-card-url"
+                  style="font-family:var(--font-mono);font-size:var(--text-micro);line-height:var(--leading-meta)"
+                >
+                  {post.instagramUrl}
+                </span>
               </a>
             ))}
           </div>
