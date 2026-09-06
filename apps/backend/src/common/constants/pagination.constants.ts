@@ -9,3 +9,6 @@ export const MAX_PAGE_SIZE = 100;
 
 /** Rolling window, in days, used to calculate trending articles. */
 export const TRENDING_WINDOW_DAYS = 7;
+
+/** Number of items the trending section is filled to. */
+export const TRENDING_DEFAULT_LIMIT = 6;

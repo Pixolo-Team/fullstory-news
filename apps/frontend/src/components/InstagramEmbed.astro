@@ -1,0 +1,41 @@
+---
+/**
+ * One Instagram post rendered by Instagram's own embed.js.
+ *
+ * The markup is only the seed: embed.js finds every .instagram-media
+ * blockquote on the page and replaces it with an iframe. Until that runs -
+ * and permanently, for readers who block third-party scripts - the inner
+ * link is what shows, so it is a real link rather than a placeholder.
+ */
+interface Props {
+  permalink: string;
+}
+
+const { permalink } = Astro.props;
+---
+
+<blockquote
+  class="instagram-media"
+  data-instgrm-permalink={permalink}
+  data-instgrm-version="14"
+  style="background:#FFF;border:0;margin:0;padding:0;width:100%;max-width:540px"
+>
+  <a class="ig-fallback" href={permalink} rel="noopener noreferrer" target="_blank">
+    View this reel on Instagram
+  </a>
+</blockquote>
+
+<style>
+  /* Shown only before embed.js swaps the blockquote for its iframe, and to
+     anyone whose browser blocks that script. */
+  .ig-fallback {
+    display: block;
+    padding: 1rem;
+    border-width: var(--border-width);
+    border-style: solid;
+    border-color: var(--color-border);
+    border-radius: 0.375rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+  }
+</style>
