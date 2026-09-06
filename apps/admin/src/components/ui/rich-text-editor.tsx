@@ -77,7 +77,7 @@ export function RichTextEditor({ name, defaultValue = '' }: RichTextEditorProps)
 
   if (!editor) {
     return (
-      <div className="min-h-72 rounded-md border border-rule bg-paper px-4 py-3 text-sm text-ink-muted">
+      <div className="h-[34rem] rounded-md border border-rule bg-paper px-4 py-3 text-sm text-ink-muted">
         Loading editor...
         <input name={name} type="hidden" value={html} readOnly />
       </div>
@@ -85,9 +85,9 @@ export function RichTextEditor({ name, defaultValue = '' }: RichTextEditorProps)
   }
 
   return (
-    <div className="rounded-md border border-rule bg-paper">
+    <div className="flex h-[34rem] flex-col overflow-hidden rounded-md border border-rule bg-paper">
       <EditorToolbar editor={editor} />
-      <EditorContent editor={editor} />
+      <EditorContent className="min-h-0 flex-1 overflow-y-auto" editor={editor} />
       <input name={name} type="hidden" value={html} readOnly />
     </div>
   );
@@ -186,7 +186,7 @@ function EditorToolbar({ editor }: EditorToolbarProps) {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-rule px-2 py-2">
+    <div className="z-20 flex shrink-0 flex-wrap items-center gap-1 border-b border-rule bg-paper px-2 py-2 shadow-sm">
       <ToolbarButton
         active={editor.isActive('bold')}
         label="Bold"

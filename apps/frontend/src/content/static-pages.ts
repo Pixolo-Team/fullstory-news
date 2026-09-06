@@ -22,11 +22,9 @@ export const STATIC_PAGES: Record<string, StaticPageData> = {
       <h2>What we collect</h2>
       <p>Fullstory records the Stories you open and the search terms you enter, without an account and without an advertising identifier. Requests are aggregated daily; individual request logs are discarded after thirty days.</p>
       <h2>What we do not do</h2>
-      <ul>
-        <li>No reader accounts, and therefore no reader profiles.</li>
-        <li>No third-party advertising or behavioural tracking scripts.</li>
-        <li>No sale or transfer of reader data to any other party.</li>
-      </ul>
+      <p>No reader accounts, and therefore no reader profiles.</p>
+      <p>No third-party advertising or behavioural tracking scripts.</p>
+      <p>No sale or transfer of reader data to any other party.</p>
       <h2>Contact</h2>
       <p>Write to the officer named on the Grievance page. A response is due within fifteen working days of receipt.</p>
     `,

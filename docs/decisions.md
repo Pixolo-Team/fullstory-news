@@ -16,7 +16,7 @@ Decisions are recorded here rather than made silently in code. Anything marked
 | 7  | Rich text editor           | **Open**                              |
 | 8  | Image / media storage      | **Decided** — Supabase Storage        |
 | 9  | Search implementation      | **Decided** — Postgres `ILIKE`        |
-| 10 | Instagram integration      | **Open** — manual URLs preferred      |
+| 10 | Instagram integration      | **Decided** - official embeds from manual URLs |
 | 11 | Backend deployment         | **Open**                              |
 | 12 | SEO scope                  | **Open**                              |
 | 13 | Client branding            | **Blocked** — awaiting assets         |
@@ -175,15 +175,26 @@ changing the frontend route contract.
 
 ---
 
-## 10. Instagram integration — Open (manual URLs preferred)
+## 10. Instagram integration - Decided: official embeds from manual URLs
 
 For the MVP an admin pastes Instagram post/reel URLs onto an article
 (`article_instagram_post`). No API sync, no scraping.
 
-**Open:** how the URLs render on the article page — Instagram's official embed
-script (which adds third-party JavaScript and tracking to an otherwise light
-page) or a plain link card. A plain card is more in keeping with the simplicity
-USP.
+**Options considered:** plain link cards, Instagram iframe embeds, Instagram's
+official embed script, and generated thumbnail cards.
+
+**Decision:** render pasted Instagram URLs as official Instagram embeds on the
+public Story page.
+
+**Reasoning:** generated thumbnails can look random or misleading, while plain
+link cards do not show the related video inside the Story. Official embeds show
+the actual post from the pasted URL and keep the admin workflow manual. The
+tradeoff is that Story pages with Instagram posts load Instagram's third-party
+embed script.
+
+**Consequence:** Story pages with Instagram posts render up to three saved URLs
+as Instagram embeds. The embed script is loaded only on Story pages that have
+Instagram posts.
 
 ---
 

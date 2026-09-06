@@ -6,11 +6,15 @@ interface Props {
 
 const { title, url } = Astro.props;
 
-const encodedUrl = encodeURIComponent(url);
+const localHosts = ['localhost', '127.0.0.1', '::1'];
+const shareUrl = localHosts.includes(new URL(url).hostname)
+  ? new URL(new URL(url).pathname, 'https://www.fullstorynews.com').toString()
+  : url;
+const encodedUrl = encodeURIComponent(shareUrl);
 const encodedTitle = encodeURIComponent(title);
 ---
 
-<div class="mt-5 flex flex-wrap gap-2" data-share data-title={title} data-url={url}>
+<div class="mt-5 flex flex-wrap gap-2" data-share data-title={title} data-url={shareUrl}>
   <a
     class="remarque-button whitespace-nowrap no-underline"
     href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}

@@ -80,6 +80,7 @@ export interface ArticleData {
 export interface ArticleInstagramPostData {
   id: string;
   instagramUrl: string;
+  thumbnailUrl: string | null;
   sortOrder: number;
 }
 
