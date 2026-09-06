@@ -16,7 +16,7 @@ Decisions are recorded here rather than made silently in code. Anything marked
 | 7  | Rich text editor           | **Open**                              |
 | 8  | Image / media storage      | **Decided** — Supabase Storage        |
 | 9  | Search implementation      | **Decided** — Postgres `ILIKE`        |
-| 10 | Instagram integration      | **Decided** - plain link cards from manual URLs |
+| 10 | Instagram integration      | **Decided** - official embeds from manual URLs |
 | 11 | Backend deployment         | **Open**                              |
 | 12 | SEO scope                  | **Open**                              |
 | 13 | Client branding            | **Blocked** — awaiting assets         |
@@ -175,7 +175,7 @@ changing the frontend route contract.
 
 ---
 
-## 10. Instagram integration — Decided: plain link cards from manual URLs
+## 10. Instagram integration - Decided: official embeds from manual URLs
 
 For the MVP an admin pastes Instagram post/reel URLs onto an article
 (`article_instagram_post`). No API sync, no scraping.
@@ -183,17 +183,18 @@ For the MVP an admin pastes Instagram post/reel URLs onto an article
 **Options considered:** plain link cards, Instagram iframe embeds, Instagram's
 official embed script, and generated thumbnail cards.
 
-**Decision:** render pasted Instagram URLs as plain link cards on the
+**Decision:** render pasted Instagram URLs as official Instagram embeds on the
 public Story page.
 
-**Reasoning:** generated thumbnails can look random or misleading, and plain
-link cards keep the page simple, predictable and light. Instagram embeds show
-the actual post, but they also include account chrome, likes, comments and
-third-party script or iframe behaviour that the site cannot fully control.
+**Reasoning:** generated thumbnails can look random or misleading, while plain
+link cards do not show the related video inside the Story. Official embeds show
+the actual post from the pasted URL and keep the admin workflow manual. The
+tradeoff is that Story pages with Instagram posts load Instagram's third-party
+embed script.
 
-**Consequence:** Story pages with Instagram posts show the saved URLs as cards
-and open Instagram in a new tab. No Instagram third-party script, iframe or
-generated thumbnail is loaded.
+**Consequence:** Story pages with Instagram posts render up to three saved URLs
+as Instagram embeds. The embed script is loaded only on Story pages that have
+Instagram posts.
 
 ---
 
