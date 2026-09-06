@@ -77,6 +77,24 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
         color: inherit;
       }
 
+      .instagram-embed-list {
+        display: grid;
+        gap: var(--space-5);
+        justify-items: start;
+      }
+
+      .instagram-media {
+        width: min(100%, 33.75rem);
+        min-width: 0;
+      }
+
+      .instagram-embed-fallback {
+        color: var(--color-muted);
+        font-family: var(--font-mono);
+        font-size: var(--text-micro);
+        line-height: var(--leading-meta);
+        overflow-wrap: anywhere;
+      }
     </style>
 
     <header class="remarque-post-header mx-auto max-w-[46rem]">
@@ -150,45 +168,23 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
           <p class="text-label mb-5 mt-0">
             Related Videos
           </p>
-          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-            {/* Never more than 3: a wall of reels overwhelms the Story it sits under.
-                A custom card, not Instagram's own embed: their widget always carries
-                its profile header, like/comment icons and count with no way to turn
-                that off, which reads as noise under a news Story. This links out to
-                the real reel instead of playing it inline. */}
+          <div class="instagram-embed-list">
+            {/* Never more than 3: a wall of reels overwhelms the Story it sits under. */}
             {article.instagramPosts.slice(0, MAX_INSTAGRAM_EMBEDS).map((post) => (
-              <a
-                class="group relative block aspect-[9/16] overflow-hidden rounded-md border"
-                href={post.instagramUrl}
-                rel="noopener noreferrer"
-                style="border-width:var(--border-width);border-color:var(--color-border)"
-                target="_blank"
+              <blockquote
+                class="instagram-media"
+                data-instgrm-permalink={post.instagramUrl}
+                data-instgrm-version="14"
               >
-                <img
-                  alt=""
-                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                  src={`https://picsum.photos/seed/ig-${post.id}/480/854`}
-                />
-
-                {/* Reel affordance: a centered play glyph, so the tile reads as video
-                    even though it is a thumbnail rather than a live embed. */}
-                <span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/25">
-                  <svg fill="none" height="40" viewBox="0 0 24 24" width="40">
-                    <circle cx="12" cy="12" fill="rgba(0,0,0,0.35)" r="11" />
-                    <path d="M9.5 7.5L17 12L9.5 16.5V7.5Z" fill="white" />
-                  </svg>
-                </span>
-
-                <span class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-gradient-to-t from-black/80 to-transparent px-2.5 pb-2.5 pt-6 text-white">
-                  <svg fill="none" height="14" viewBox="0 0 24 24" width="14">
-                    <rect height="20" rx="5" stroke="white" stroke-width="1.8" width="20" x="2" y="2" />
-                    <circle cx="12" cy="12" r="4.2" stroke="white" stroke-width="1.8" />
-                    <circle cx="17.2" cy="6.8" fill="white" r="1.1" />
-                  </svg>
-                  <span class="font-mono text-[11px] tracking-wide">View reel</span>
-                </span>
-              </a>
+                <a
+                  class="instagram-embed-fallback"
+                  href={post.instagramUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {post.instagramUrl}
+                </a>
+              </blockquote>
             ))}
           </div>
         </section>
@@ -210,4 +206,9 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
       )
     }
   </div>
+  {
+    article.instagramPosts.length > 0 && (
+      <script async is:inline src="https://www.instagram.com/embed.js"></script>
+    )
+  }
 </BaseLayout>

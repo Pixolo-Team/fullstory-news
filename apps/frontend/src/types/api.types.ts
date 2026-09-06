@@ -50,6 +50,8 @@ export interface ArticleData {
 export interface ArticleInstagramPostData {
   id: string;
   instagramUrl: string;
+  /** Instagram's own preview image for this post. Null when it could not be fetched. */
+  thumbnailUrl: string | null;
   sortOrder: number;
 }
 
