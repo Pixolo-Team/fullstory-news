@@ -18,20 +18,6 @@ if (!article) {
 
 const MAX_INSTAGRAM_EMBEDS = 3;
 const similar = await getSimilarArticlesRequest(article.id, 3);
-<<<<<<< HEAD
-
-// Astro.url.origin reflects the request that actually reached this page, so
-// it is right in every environment without depending on PUBLIC_SITE_URL
-// being set. Using Astro.site here previously sent readers a share link
-// pointing at localhost whenever that env var was missing on the host.
-const shareUrl = new URL(Astro.url.pathname, Astro.url.origin).toString();
-
-// Links that embed.js cannot render are dropped rather than shown broken: a
-// stored URL may be a profile, a story, or simply mistyped.
-const embeddableReels = article.instagramPosts
-  .map((post) => buildInstagramPermalinkService(post.instagramUrl))
-  .filter((permalink): permalink is string => permalink !== null);
-=======
 const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
 const requestOrigin = Astro.url.origin;
 const configuredOrigin = configuredSiteUrl ? new URL(configuredSiteUrl).origin : null;
@@ -45,7 +31,6 @@ const shareOrigin =
       ? 'https://www.fullstorynews.com'
       : requestOrigin;
 const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
->>>>>>> c7a9322e714e5e60a7ce22bcb8a6e35eedbd2130
 ---
 
 <BaseLayout
@@ -185,12 +170,6 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
           <p class="text-label mb-5 mt-0">
             Related Videos
           </p>
-<<<<<<< HEAD
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Never more than 3: a wall of reels overwhelms the Story it sits under. */}
-            {embeddableReels.slice(0, 3).map((permalink) => (
-              <InstagramEmbed permalink={permalink} />
-=======
           <div class="instagram-embed-list">
             {/* Never more than 3: a wall of reels overwhelms the Story it sits under. */}
             {article.instagramPosts.slice(0, MAX_INSTAGRAM_EMBEDS).map((post) => (
@@ -208,7 +187,6 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
                   {post.instagramUrl}
                 </a>
               </blockquote>
->>>>>>> c7a9322e714e5e60a7ce22bcb8a6e35eedbd2130
             ))}
           </div>
 
