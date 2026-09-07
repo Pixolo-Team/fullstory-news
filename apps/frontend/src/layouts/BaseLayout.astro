@@ -47,6 +47,11 @@ const siteOrigin =
       ? 'https://www.fullstorynews.com'
       : requestOrigin;
 
+// Astro.url is not trustworthy for telling production apart from local dev
+// on this deployment (see the long comment where this is used, further
+// down) - the raw Host header is read directly instead.
+const isProductionHost = Astro.request.headers.get('host') === 'www.fullstorynews.com';
+
 // Canonical drops query strings (page=, q=) so paginated and searched views
 // of the same page do not read as separate URLs to a crawler.
 const canonicalUrl = new URL(Astro.url.pathname, siteOrigin).toString();
@@ -122,24 +127,27 @@ const structuredData = article
     <meta name="twitter:image" content={imageUrl} />
 
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-    <meta name="x-debug-request-host" content={requestHost} />
-    <meta name="x-debug-configured-host" content={configuredHost} />
-    <meta name="x-debug-header-host" content={Astro.request.headers.get('host') ?? 'null'} />
-    <meta name="x-debug-header-xfh" content={Astro.request.headers.get('x-forwarded-host') ?? 'null'} />
-
     {
       // gtag's default config call fires a page_view on every full page
       // load - all this site does, since navigation here is never a
       // client-side route change - so no separate page-view call is needed
-      // per page. Gated on requestHost, the actual host the request came in
-      // on - NOT siteOrigin, which deliberately pretends to be production
-      // even in local dev (PUBLIC_SITE_URL=http://localhost:4321 in .env)
-      // so canonical/OG tags are realistic to test; reusing it here would
-      // have reported local dev traffic to Analytics. import.meta.env.PROD
-      // was tried first and rejected: verified it built as false in the
-      // server bundle even from a real `astro build`, silently dropping
-      // this whole block in production too.
-      requestHost === 'www.fullstorynews.com' && (
+      // per page.
+      //
+      // Gated on isProductionHost, read straight from the request's own Host
+      // header - not Astro.url, which resolves to "localhost" on every
+      // request on this Vercel deployment, in production included, not only
+      // in API routes as first assumed. siteOrigin (used for canonical/OG
+      // elsewhere in this file) only reads correct in production by
+      // accident: PUBLIC_SITE_URL is unset there, so it falls through to a
+      // hardcoded 'https://www.fullstorynews.com' whenever Astro.url looks
+      // local - which, it turns out, is every request. Confirmed by
+      // shipping temporary debug meta tags and reading them back live
+      // rather than assuming: Astro.url.hostname reads "localhost" in
+      // production, the raw Host header correctly reads
+      // "www.fullstorynews.com". import.meta.env.PROD was tried and
+      // rejected first too: verified it built as false in this SSR
+      // adapter's server bundle even from a genuine `astro build`.
+      isProductionHost && (
         <>
           <script async is:inline src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
           <script is:inline define:vars={{ GA_MEASUREMENT_ID }}>
