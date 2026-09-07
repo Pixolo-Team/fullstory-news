@@ -4,6 +4,9 @@ import Footer from '@/components/Footer.astro';
 import { getCategoriesRequest } from '@/requests/get-categories.request';
 import '@/styles/global.css';
 
+/** Loaded only in production so local dev and preview traffic never reaches Analytics. */
+const GA_MEASUREMENT_ID = 'G-3FMBG1EGMQ';
+
 /** Structured data for a Story page's `article` prop. */
 interface ArticleMetaData {
   publishedTime: string;
@@ -119,6 +122,33 @@ const structuredData = article
     <meta name="twitter:image" content={imageUrl} />
 
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+    {
+      // gtag's default config call fires a page_view on every full page
+      // load - all this site does, since navigation here is never a
+      // client-side route change - so no separate page-view call is needed
+      // per page. Gated on requestHost, the actual host the request came in
+      // on - NOT siteOrigin, which deliberately pretends to be production
+      // even in local dev (PUBLIC_SITE_URL=http://localhost:4321 in .env)
+      // so canonical/OG tags are realistic to test; reusing it here would
+      // have reported local dev traffic to Analytics. import.meta.env.PROD
+      // was tried first and rejected: verified it built as false in the
+      // server bundle even from a real `astro build`, silently dropping
+      // this whole block in production too.
+      requestHost === 'www.fullstorynews.com' && (
+        <>
+          <script async is:inline src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+          <script is:inline define:vars={{ GA_MEASUREMENT_ID }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', GA_MEASUREMENT_ID);
+          </script>
+        </>
+      )
+    }
 
     <link rel="preconnect" href="/" />
     <script is:inline>
