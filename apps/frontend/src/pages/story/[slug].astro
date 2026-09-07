@@ -2,9 +2,11 @@
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import StoryCard from '@/components/StoryCard.astro';
 import ShareButtons from '@/components/ShareButtons.astro';
+import InstagramEmbed from '@/components/InstagramEmbed.astro';
 import { getArticleRequest } from '@/requests/get-article.request';
 import { getSimilarArticlesRequest } from '@/requests/get-articles.request';
 import { formatDateService } from '@/services/format-date.service';
+import { buildInstagramPermalinkService } from '@/services/build-instagram-permalink.service';
 
 const { slug } = Astro.params;
 
@@ -163,7 +165,7 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
     }
 
     {
-      article.instagramPosts.length > 0 && (
+      embeddableReels.length > 0 && (
         <section class="mt-9 border-t pt-6" style="border-top-width:var(--border-width);border-color:var(--color-border)">
           <p class="text-label mb-5 mt-0">
             Related Videos
@@ -187,6 +189,11 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
               </blockquote>
             ))}
           </div>
+
+          {/* embed.js rewrites every .instagram-media blockquote on the page.
+              It processes once on load, which is all this page needs - the
+              reels are server-rendered, not added after hydration. */}
+          <script async is:inline src="https://www.instagram.com/embed.js"></script>
         </section>
       )
     }

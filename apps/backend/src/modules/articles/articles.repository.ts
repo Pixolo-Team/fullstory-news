@@ -431,7 +431,11 @@ export class ArticlesRepository {
   }
 
   /**
-   * Reads a set of articles by id.
+   * Reads a set of published articles by id.
+   *
+   * Published-only: an article that collected views and was later moved back
+   * to draft must not reappear in a public listing.
+   *
    * @param ids - Article ids
    * @returns Matching article list items
    */
@@ -446,7 +450,51 @@ export class ArticlesRepository {
         'id, headline, sub_headline, slug, status, hero_image_url, tags, view_count, published_at, updated_at, category:categories!inner(id, name, slug), author:authors!inner(id, name)',
       )
       .in('id', ids)
+      .eq('status', 'published')
       .returns<ArticleRowData[]>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []).map((row) => this.mapArticleListItem(row));
+  }
+
+  /**
+   * Reads recently published articles, newest first, excluding given ids.
+   *
+   * Backfills the trending section when too few articles have been viewed
+   * inside the rolling window.
+   *
+   * @param publishedAfter - ISO timestamp lower bound
+   * @param limit - Max rows to return
+   * @param excludeIds - Article ids already selected by view count
+   * @returns Recently published article list items
+   */
+  async findRecentPublishedArticlesRepository(
+    publishedAfter: string,
+    limit: number,
+    excludeIds: string[] = [],
+  ): Promise<ArticleListItemData[]> {
+    if (limit <= 0) {
+      return [];
+    }
+
+    let request = this.supabase
+      .from('articles')
+      .select(
+        'id, headline, sub_headline, slug, status, hero_image_url, tags, view_count, published_at, updated_at, category:categories!inner(id, name, slug), author:authors!inner(id, name)',
+      )
+      .eq('status', 'published')
+      .gte('published_at', publishedAfter)
+      .order('published_at', { ascending: false })
+      .limit(limit);
+
+    if (excludeIds.length > 0) {
+      request = request.not('id', 'in', `(${excludeIds.join(',')})`);
+    }
+
+    const { data, error } = await request.returns<ArticleRowData[]>();
 
     if (error) {
       throw new Error(error.message);

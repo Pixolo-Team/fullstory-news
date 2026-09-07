@@ -25,12 +25,21 @@ async function persistRotatedSessionCookieRequest(
     return;
   }
 
-  cookieStore.set('fs_session', nextSessionCookie, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-  });
+  try {
+    cookieStore.set('fs_session', nextSessionCookie, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+    });
+  } catch {
+    // Next.js only allows cookie writes from a Server Action or Route Handler,
+    // and this same request path runs during page renders, where the write
+    // throws. That throw used to escape into sendBackendRequest's catch, which
+    // turned a perfectly valid /api/auth/me response into an error envelope -
+    // so the layout saw no author and bounced the user to /login. Dropping a
+    // rotated token is recoverable; signing the user out is not.
+  }
 }
 
 /**

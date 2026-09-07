@@ -9,7 +9,7 @@ import type {
 } from '@/modules/articles/articles.types.js';
 
 // CONSTANTS //
-import { TRENDING_WINDOW_DAYS } from '@/common/constants/pagination.constants.js';
+import { TRENDING_DEFAULT_LIMIT, TRENDING_WINDOW_DAYS } from '@/common/constants/pagination.constants.js';
 
 // SERVICES //
 import { ArticlesRepository } from '@/modules/articles/articles.repository.js';
@@ -86,29 +86,64 @@ export class ArticlesService {
    * @param limit - Max articles to return
    * @returns Trending article list items
    */
-  async getTrendingArticlesService(limit = 3): Promise<ArticleListItemData[]> {
-    const viewedAfter = new Date(Date.now() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  async getTrendingArticlesService(limit = TRENDING_DEFAULT_LIMIT): Promise<ArticleListItemData[]> {
+    const windowStart = new Date(Date.now() - TRENDING_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-      const views = await this.articlesRepository.findRecentArticleViewsRepository(viewedAfter);
-      const counts = new Map<string, number>();
+      const viewed = await this.getMostViewedArticlesService(windowStart, limit);
 
-      views.forEach((view) => {
-        counts.set(view.articleId, (counts.get(view.articleId) ?? 0) + 1);
-      });
+      if (viewed.length >= limit) {
+        return viewed;
+      }
 
-      const orderedIds = [...counts.entries()]
-        .sort((left, right) => right[1] - left[1])
-        .slice(0, limit)
-        .map(([articleId]) => articleId);
+      // The section is a fixed size, so anything the view counts could not fill
+      // is backfilled with the newest Stories from the same window. A quiet
+      // week, or a brand new Story nobody has opened yet, still gets a slot.
+      const backfill = await this.articlesRepository.findRecentPublishedArticlesRepository(
+        windowStart,
+        limit - viewed.length,
+        viewed.map((article) => article.id),
+      );
 
-      const items = await this.articlesRepository.findArticlesByIdsRepository(orderedIds);
-      const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
-
-      return items.sort((left, right) => (orderMap.get(left.id) ?? 0) - (orderMap.get(right.id) ?? 0));
+      return [...viewed, ...backfill];
     } catch {
       throw new DependencyError('Failed to load trending articles');
     }
+  }
+
+  /**
+   * Ranks published articles by view count inside the rolling window
+   * @param windowStart - ISO timestamp lower bound
+   * @param limit - Max rows to return
+   * @returns Published articles ordered by view count, most viewed first
+   */
+  private async getMostViewedArticlesService(
+    windowStart: string,
+    limit: number,
+  ): Promise<ArticleListItemData[]> {
+    const views = await this.articlesRepository.findRecentArticleViewsRepository(windowStart);
+
+    if (views.length === 0) {
+      return [];
+    }
+
+    const counts = new Map<string, number>();
+
+    views.forEach((view) => {
+      counts.set(view.articleId, (counts.get(view.articleId) ?? 0) + 1);
+    });
+
+    const orderedIds = [...counts.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, limit)
+      .map(([articleId]) => articleId);
+
+    // Fewer rows can come back than ids requested: the lookup is published-only,
+    // so a Story viewed before being moved to draft drops out here.
+    const items = await this.articlesRepository.findArticlesByIdsRepository(orderedIds);
+    const orderMap = new Map(orderedIds.map((id, index) => [id, index]));
+
+    return items.sort((left, right) => (orderMap.get(left.id) ?? 0) - (orderMap.get(right.id) ?? 0));
   }
 
   /**
