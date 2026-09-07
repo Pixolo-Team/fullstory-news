@@ -17,6 +17,14 @@ if (!article) {
 }
 
 const MAX_INSTAGRAM_EMBEDS = 3;
+// Never more than 3: a wall of reels overwhelms the Story it sits under. A
+// pasted URL that buildInstagramPermalinkService cannot normalise (not an
+// Instagram link, or an unrecognised path shape) is dropped rather than
+// handed to embed.js as-is, which would just render nothing.
+const embeddableReels = article.instagramPosts
+  .map((post) => buildInstagramPermalinkService(post.instagramUrl))
+  .filter((permalink): permalink is string => permalink !== null)
+  .slice(0, MAX_INSTAGRAM_EMBEDS);
 const similar = await getSimilarArticlesRequest(article.id, 3);
 const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
 const requestOrigin = Astro.url.origin;
@@ -83,19 +91,6 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
         display: grid;
         gap: var(--space-5);
         justify-items: start;
-      }
-
-      .instagram-media {
-        width: min(100%, 33.75rem);
-        min-width: 0;
-      }
-
-      .instagram-embed-fallback {
-        color: var(--color-muted);
-        font-family: var(--font-mono);
-        font-size: var(--text-micro);
-        line-height: var(--leading-meta);
-        overflow-wrap: anywhere;
       }
     </style>
 
@@ -171,29 +166,10 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
             Related Videos
           </p>
           <div class="instagram-embed-list">
-            {/* Never more than 3: a wall of reels overwhelms the Story it sits under. */}
-            {article.instagramPosts.slice(0, MAX_INSTAGRAM_EMBEDS).map((post) => (
-              <blockquote
-                class="instagram-media"
-                data-instgrm-permalink={post.instagramUrl}
-                data-instgrm-version="14"
-              >
-                <a
-                  class="instagram-embed-fallback"
-                  href={post.instagramUrl}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  {post.instagramUrl}
-                </a>
-              </blockquote>
+            {embeddableReels.map((permalink) => (
+              <InstagramEmbed permalink={permalink} />
             ))}
           </div>
-
-          {/* embed.js rewrites every .instagram-media blockquote on the page.
-              It processes once on load, which is all this page needs - the
-              reels are server-rendered, not added after hydration. */}
-          <script async is:inline src="https://www.instagram.com/embed.js"></script>
         </section>
       )
     }
@@ -214,7 +190,10 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
     }
   </div>
   {
-    article.instagramPosts.length > 0 && (
+    // embed.js rewrites every .instagram-media blockquote on the page. It
+    // processes once on load, which is all this page needs - the reels are
+    // server-rendered, not added after hydration.
+    embeddableReels.length > 0 && (
       <script async is:inline src="https://www.instagram.com/embed.js"></script>
     )
   }
