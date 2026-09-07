@@ -67,9 +67,25 @@ function escapeXml(value: string): string {
  * @returns XML sitemap response
  */
 export const GET: APIRoute = async ({ url }) => {
-  // url.origin reflects the request that actually reached this endpoint, so
-  // it is right regardless of whether PUBLIC_SITE_URL is set on the host.
-  const origin = url.origin;
+  // On this Vercel deployment, an API route's own `url.origin` resolves to
+  // "https://localhost" even on a fresh, uncached invocation - a page
+  // component's Astro.url.origin does not have this problem, only a plain
+  // API route does. Verified directly: fetching this endpoint with a
+  // cache-busting query string still returned localhost URLs. Falling back
+  // to the same PUBLIC_SITE_URL / production-host logic BaseLayout already
+  // uses for the identical class of problem, since that is proven correct
+  // across the rest of this site.
+  const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
+  const localHosts = ['localhost', '127.0.0.1', '::1'];
+  const configuredOrigin = configuredSiteUrl ? new URL(configuredSiteUrl).origin : null;
+  const configuredHost = configuredOrigin ? new URL(configuredOrigin).hostname : '';
+  const requestHost = url.hostname;
+  const origin =
+    configuredOrigin && !localHosts.includes(configuredHost)
+      ? configuredOrigin
+      : localHosts.includes(requestHost)
+        ? 'https://www.fullstorynews.com'
+        : url.origin;
 
   const [categories, articles] = await Promise.all([
     getCategoriesRequest(),
