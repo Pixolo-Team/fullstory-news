@@ -122,6 +122,8 @@ const structuredData = article
     <meta name="twitter:image" content={imageUrl} />
 
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <meta name="x-debug-request-host" content={requestHost} />
+    <meta name="x-debug-configured-host" content={configuredHost} />
 
     {
       // gtag's default config call fires a page_view on every full page
