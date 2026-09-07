@@ -124,6 +124,8 @@ const structuredData = article
     <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <meta name="x-debug-request-host" content={requestHost} />
     <meta name="x-debug-configured-host" content={configuredHost} />
+    <meta name="x-debug-header-host" content={Astro.request.headers.get('host') ?? 'null'} />
+    <meta name="x-debug-header-xfh" content={Astro.request.headers.get('x-forwarded-host') ?? 'null'} />
 
     {
       // gtag's default config call fires a page_view on every full page
