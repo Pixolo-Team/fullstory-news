@@ -17,12 +17,16 @@ export function Button({
   type = 'button',
   ...props
 }: ButtonProps) {
+  // --color-paper and --color-paper-muted sit almost on top of each other in
+  // dark mode, so a hover that only swapped between them (or dimmed opacity
+  // by 5%) read as no hover at all there. accent-soft/accent-hover are real
+  // color shifts in both themes.
   const variantClassName =
     variant === 'outline'
-      ? 'border border-rule bg-paper text-ink hover:bg-paper-muted'
+      ? 'border border-rule bg-paper text-ink hover:border-accent hover:bg-accent-soft hover:text-accent'
       : variant === 'ghost'
-        ? 'bg-transparent text-ink hover:bg-paper-muted'
-        : 'bg-accent text-paper hover:opacity-95';
+        ? 'bg-transparent text-ink hover:bg-accent-soft hover:text-accent'
+        : 'bg-accent text-paper hover:bg-accent-hover';
 
   // A disabled button must stop looking pressable: no hover, dimmed, and a
   // cursor that says so. Without this a submitting button looks live.

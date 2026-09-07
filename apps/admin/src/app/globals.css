@@ -13,6 +13,7 @@
   --color-ink-muted: #5b5b63;
   --color-rule: #e3e3df;
   --color-accent: #1a4fd6;
+  --color-accent-hover: #1440b8;
   --color-accent-soft: #e7eeff;
   --color-danger: #a3231d;
   --color-disabled: #d7d7d2;
@@ -31,6 +32,7 @@
   --color-ink-muted: #5b5b63;
   --color-rule: #e3e3df;
   --color-accent: #1a4fd6;
+  --color-accent-hover: #1440b8;
   --color-accent-soft: #e7eeff;
   --color-danger: #a3231d;
   --color-disabled: #d7d7d2;
@@ -45,6 +47,7 @@ html[data-theme='dark'] {
   --color-ink-muted: #a5a7ae;
   --color-rule: #2a2e34;
   --color-accent: #8fb4ff;
+  --color-accent-hover: #aecaff;
   --color-accent-soft: #172235;
   --color-danger: #f08b85;
   --color-disabled: #2f2f34;
@@ -122,8 +125,12 @@ a {
     color 120ms ease-out;
 }
 
+/* --color-paper and --color-paper-muted sit almost on top of each other in
+ * dark mode (#121417 vs #0e1012), so mixing the two here was nearly
+ * invisible - accent-soft is a real color shift in both themes. */
 .admin-nav-link:hover {
-  background-color: color-mix(in srgb, var(--color-paper-muted) 60%, var(--color-paper));
+  background-color: var(--color-accent-soft);
+  color: var(--color-accent);
 }
 
 /* Active item reads as a soft pill, the only fill in the sidebar. */

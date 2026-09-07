@@ -232,11 +232,20 @@ const structuredData = article
         color: var(--color-fg) !important;
       }
 
-      /* The masthead buttons are borderless on mobile, so hover needs a fill
+      /* The hamburger is borderless on mobile, so its hover needs a fill
          rather than a border colour change. */
-      [data-nav-toggle]:hover,
-      #theme-toggle:hover {
+      [data-nav-toggle]:hover {
         background: var(--color-bg-subtle);
+      }
+
+      /* The theme toggle always has a border, so its hover reads more
+         clearly as a colour shift - matching how every other interactive
+         element on the site (links, tags, share buttons) signals hover -
+         than the barely-there background tint used here before. */
+      #theme-toggle:hover {
+        background: var(--color-accent-subtle);
+        border-color: var(--color-accent);
+        color: var(--color-accent);
       }
 
       /* Listing rows collapse to a single column, thumbnail first. */
