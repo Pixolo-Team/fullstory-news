@@ -14,27 +14,39 @@ const encodedUrl = encodeURIComponent(shareUrl);
 const encodedTitle = encodeURIComponent(title);
 ---
 
+<style>
+  /* .remarque-button's own :hover only shifts border/text color - easy to
+     miss as an "effect" at a glance. A background fill makes it obvious
+     these are clickable, matching the hover treatment tags use elsewhere
+     on the Story page. */
+  .share-button:hover:not(:disabled) {
+    background-color: var(--color-accent-subtle);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+</style>
+
 <div class="mt-5 flex flex-wrap gap-2" data-share data-title={title} data-url={shareUrl}>
   <a
-    class="remarque-button whitespace-nowrap no-underline"
+    class="remarque-button share-button whitespace-nowrap no-underline"
     href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
     rel="noopener noreferrer"
     target="_blank">WhatsApp</a
   >
   <a
-    class="remarque-button whitespace-nowrap no-underline"
+    class="remarque-button share-button whitespace-nowrap no-underline"
     href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
     rel="noopener noreferrer"
     target="_blank">X</a
   >
   <a
-    class="remarque-button whitespace-nowrap no-underline"
+    class="remarque-button share-button whitespace-nowrap no-underline"
     href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
     rel="noopener noreferrer"
     target="_blank">Facebook</a
   >
-  <button class="remarque-button whitespace-nowrap" data-copy type="button">Copy link</button>
-  <button class="remarque-button whitespace-nowrap" data-native hidden type="button">Share</button>
+  <button class="remarque-button share-button whitespace-nowrap" data-copy type="button">Copy link</button>
+  <button class="remarque-button share-button whitespace-nowrap" data-native hidden type="button">Share</button>
 </div>
 
 <script>

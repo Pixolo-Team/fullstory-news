@@ -16,10 +16,3 @@ export const IMAGE_MAGIC_BYTES: Record<string, number[][]> = {
   // RIFF....WEBP - bytes 8-11 are checked separately.
   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
 };
-
-/** File extension stored for each accepted type. */
-export const IMAGE_EXTENSIONS: Record<string, string> = {
-  'image/jpeg': 'jpg',
-  'image/png': 'png',
-  'image/webp': 'webp',
-};

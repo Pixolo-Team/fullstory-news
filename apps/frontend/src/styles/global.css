@@ -8,3 +8,10 @@
   --color-link-hover: var(--color-accent-hover);
   --color-focus-ring: var(--color-accent);
 }
+
+/* Tailwind's preflight resets button cursor to the browser default, which
+ * reads as "not clickable" - most visibly on the theme toggle, which has no
+ * other affordance styling. One rule covers every button on the site. */
+button:not(:disabled) {
+  cursor: pointer;
+}

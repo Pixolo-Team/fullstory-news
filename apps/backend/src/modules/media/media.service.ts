@@ -7,12 +7,7 @@ import { buildAppConfig } from '@/config/app.config.js';
 import { SUPABASE_CLIENT } from '@/config/supabase.config.js';
 
 // CONSTANTS //
-import {
-  ALLOWED_IMAGE_TYPES,
-  IMAGE_EXTENSIONS,
-  IMAGE_MAGIC_BYTES,
-  MAX_IMAGE_SIZE_BYTES,
-} from '@/modules/media/media.constants.js';
+import { ALLOWED_IMAGE_TYPES, IMAGE_MAGIC_BYTES, MAX_IMAGE_SIZE_BYTES } from '@/modules/media/media.constants.js';
 
 // UTILS //
 import { DependencyError, ValidationError } from '@/common/errors/domain.error.js';
@@ -21,6 +16,19 @@ import { DependencyError, ValidationError } from '@/common/errors/domain.error.j
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import sharp from 'sharp';
+
+/** Wide enough for a hero banner on any layout this site renders; never upscaled. */
+const MAX_IMAGE_WIDTH_PX = 1600;
+
+/**
+ * Social crawlers (WhatsApp in particular) are unreliable or outright fail to
+ * fetch a link-preview image above roughly this size - an admin-uploaded
+ * photo straight off a phone routinely lands in the 2-5 MB range, well past
+ * that. Quality steps down until the encoded result fits, or the floor is hit.
+ */
+const TARGET_MAX_BYTES = 500 * 1024;
+const JPEG_QUALITY_STEPS = [82, 70, 60, 45];
 
 /**
  * Image upload business logic.
@@ -59,17 +67,23 @@ export class MediaService {
 
     const appConfig = buildAppConfig(this.configService);
 
+    // Re-encoded to JPEG regardless of the source format and capped to a
+    // reasonable width: an admin-uploaded photo routinely lands well past
+    // what social crawlers reliably fetch for a link preview (see
+    // TARGET_MAX_BYTES). This is also what every hero image and inline
+    // Story image goes through, not just the one flagged for sharing.
+    const optimisedBuffer = await this.optimiseImageService(file.buffer);
+
     // The stored name is generated, never taken from originalname: the client
     // controls that string, and it decides both the storage path and the
     // extension the bucket serves the object as.
-    const extension = IMAGE_EXTENSIONS[file.mimetype] ?? 'bin';
-    const path = `articles/${Date.now()}-${randomUUID()}.${extension}`;
+    const path = `articles/${Date.now()}-${randomUUID()}.jpg`;
 
     const uploadResult = await this.supabase.storage
       .from(appConfig.storageBucket)
-      .upload(path, file.buffer, {
+      .upload(path, optimisedBuffer, {
         cacheControl: '3600',
-        contentType: file.mimetype,
+        contentType: 'image/jpeg',
         upsert: false,
       });
 
@@ -82,6 +96,42 @@ export class MediaService {
     } = this.supabase.storage.from(appConfig.storageBucket).getPublicUrl(path);
 
     return { url: publicUrl };
+  }
+
+  /**
+   * Resizes and re-encodes an uploaded image so it stays small enough for a
+   * social crawler to fetch reliably as a link-preview image.
+   *
+   * Quality steps down through JPEG_QUALITY_STEPS until the result fits
+   * TARGET_MAX_BYTES; the lowest step is accepted even if it does not,
+   * rather than looping indefinitely on an unusually dense source image.
+   *
+   * @param buffer - Original, already-validated image bytes
+   * @returns Re-encoded JPEG bytes
+   */
+  private async optimiseImageService(buffer: Buffer): Promise<Buffer> {
+    // .rotate() with no argument reads the image's own EXIF orientation and
+    // bakes it in - without this a photo taken on a phone held sideways can
+    // come out rotated once EXIF is stripped by the format conversion below.
+    const resized = sharp(buffer)
+      .rotate()
+      .resize({ width: MAX_IMAGE_WIDTH_PX, withoutEnlargement: true });
+
+    let encoded = await resized.jpeg({ quality: JPEG_QUALITY_STEPS[0], mozjpeg: true }).toBuffer();
+
+    for (const quality of JPEG_QUALITY_STEPS.slice(1)) {
+      if (encoded.length <= TARGET_MAX_BYTES) {
+        break;
+      }
+
+      encoded = await sharp(buffer)
+        .rotate()
+        .resize({ width: MAX_IMAGE_WIDTH_PX, withoutEnlargement: true })
+        .jpeg({ quality, mozjpeg: true })
+        .toBuffer();
+    }
+
+    return encoded;
   }
 
   /**
