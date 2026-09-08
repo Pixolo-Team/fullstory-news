@@ -5,6 +5,8 @@ import { buildStoryPathService } from '@/services/build-story-path.service';
 import { formatDateService } from '@/services/format-date.service';
 import { searchArticlesRequest } from '@/requests/search-articles.request';
 import { getLatestArticlesRequest } from '@/requests/get-articles.request';
+import { buildSearchJsonLdService } from '@/services/build-json-ld.service';
+import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
 
 const query = Astro.url.searchParams.get('q')?.trim() ?? '';
 const page = Number(Astro.url.searchParams.get('page') ?? '1');

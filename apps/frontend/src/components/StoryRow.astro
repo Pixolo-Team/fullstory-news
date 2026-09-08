@@ -27,7 +27,7 @@ const href = buildStoryPathService(article);
       data-story-title
       style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
     >
-      <a class="story-link" href={href}>{article.headline}</a>
+      <a class="story-link" href={href} name={article.headline}>{article.headline}</a>
     </h3>
 
     {
@@ -56,13 +56,15 @@ const href = buildStoryPathService(article);
         class:list={['block no-underline', featured && 'sm:justify-self-end']}
         data-thumb
         href={href}
+        name={article.headline}
       >
         <img
-          alt=""
+          alt={article.headline}
           class:list={[
             'block w-full rounded-sm border object-cover',
             featured ? 'aspect-[16/9] sm:w-56' : 'aspect-[3/2]',
           ]}
+          decoding="async"
           loading="lazy"
           src={article.heroImageUrl}
           style="border-width:var(--border-width);border-color:var(--color-border)"

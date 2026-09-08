@@ -71,6 +71,7 @@ const pathname = Astro.url.pathname;
 
   .nav-link.is-active {
     color: var(--color-accent);
+    font-weight: var(--weight-semibold);
   }
 
   .nav-link.is-active::after {
@@ -133,6 +134,7 @@ const pathname = Astro.url.pathname;
         href="/"
         class="brand-mark"
         aria-label="Full Story - home"
+        name="Full Story home"
         style="display:inline-flex;align-items:center;text-decoration:none"
       >
         <Image
@@ -148,7 +150,7 @@ const pathname = Astro.url.pathname;
           class="brand-logo"
           data-variant="dark"
           src="/images/full-story-logo-light.png"
-          alt=""
+          alt="Full Story"
           width={1280}
           height={456}
           style="height:auto;width:100%;max-width:100%"
@@ -263,6 +265,7 @@ const pathname = Astro.url.pathname;
         <a
           class:list={['nav-link', pathname === '/' && 'is-active']}
           href="/"
+          name="Home"
           style="white-space:nowrap;font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);font-size:var(--text-body)"
           >Home</a
         >
@@ -271,6 +274,7 @@ const pathname = Astro.url.pathname;
             <a
               class:list={['nav-link', pathname === `/${category.slug}` && 'is-active']}
               href={`/${category.slug}`}
+              name={category.name}
               style="white-space:nowrap;font-variant-caps:all-small-caps;letter-spacing:var(--tracking-caps);font-size:var(--text-body)"
             >
               {category.name}

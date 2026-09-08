@@ -27,13 +27,14 @@ const imageSizeClassName =
 <article class:list={['flex flex-col gap-3', wrapperClassName]}>
   {
     article.heroImageUrl && (
-      <a class="block no-underline" data-thumb href={href}>
+      <a class="block no-underline" data-thumb href={href} name={article.headline}>
         <img
-          alt=""
+          alt={article.headline}
           class:list={[
             'block w-full rounded-sm border object-cover',
             imageSizeClassName,
           ]}
+          decoding="async"
           loading="lazy"
           src={article.heroImageUrl}
           style="border-width:var(--border-width);border-color:var(--color-border)"
@@ -49,7 +50,7 @@ const imageSizeClassName =
     ]}
     style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
   >
-    <a class="story-link" href={href}>{article.headline}</a>
+    <a class="story-link" href={href} name={article.headline}>{article.headline}</a>
   </h3>
 
   {

@@ -30,18 +30,21 @@ const encodedTitle = encodeURIComponent(title);
   <a
     class="remarque-button share-button whitespace-nowrap no-underline"
     href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
+    name="Share on WhatsApp"
     rel="noopener noreferrer"
     target="_blank">WhatsApp</a
   >
   <a
     class="remarque-button share-button whitespace-nowrap no-underline"
     href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}
+    name="Share on X"
     rel="noopener noreferrer"
     target="_blank">X</a
   >
   <a
     class="remarque-button share-button whitespace-nowrap no-underline"
     href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+    name="Share on Facebook"
     rel="noopener noreferrer"
     target="_blank">Facebook</a
   >

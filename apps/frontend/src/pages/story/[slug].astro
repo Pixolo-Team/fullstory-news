@@ -7,6 +7,8 @@ import { getArticleRequest } from '@/requests/get-article.request';
 import { getSimilarArticlesRequest } from '@/requests/get-articles.request';
 import { formatDateService } from '@/services/format-date.service';
 import { buildInstagramPermalinkService } from '@/services/build-instagram-permalink.service';
+import { buildStoryJsonLdService } from '@/services/build-json-ld.service';
+import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
 
 const { slug } = Astro.params;
 
@@ -26,19 +28,9 @@ const embeddableReels = article.instagramPosts
   .filter((permalink): permalink is string => permalink !== null)
   .slice(0, MAX_INSTAGRAM_EMBEDS);
 const similar = await getSimilarArticlesRequest(article.id, 3);
-const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
-const requestOrigin = Astro.url.origin;
-const configuredOrigin = configuredSiteUrl ? new URL(configuredSiteUrl).origin : null;
-const configuredHost = configuredOrigin ? new URL(configuredOrigin).hostname : '';
-const requestHost = new URL(requestOrigin).hostname;
-const localHosts = ['localhost', '127.0.0.1', '::1'];
-const shareOrigin =
-  configuredOrigin && !localHosts.includes(configuredHost)
-    ? configuredOrigin
-    : localHosts.includes(requestHost)
-      ? 'https://www.fullstorynews.com'
-      : requestOrigin;
+const shareOrigin = resolveSiteOriginService(Astro.url, import.meta.env.PUBLIC_SITE_URL);
 const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
+const jsonLd = buildStoryJsonLdService(shareOrigin, 'Full Story', article, shareUrl);
 ---
 
 <BaseLayout
@@ -51,6 +43,7 @@ const shareUrl = new URL(Astro.url.pathname, shareOrigin).toString();
   }}
   description={article.subHeadline ?? article.headline}
   image={article.heroImageUrl ?? undefined}
+  jsonLd={jsonLd}
   title={`${article.headline} - Full Story`}
 >
   <div class="mx-auto max-w-[58rem] px-4 py-10 sm:px-6 md:py-14">

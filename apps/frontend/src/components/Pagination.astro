@@ -28,7 +28,7 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1).slice(
       style="font-family:var(--font-mono);font-size:var(--text-meta);font-variant-numeric:tabular-nums lining-nums"
     >
       {page > 1 ? (
-        <a href={pageHref(page - 1)} class="link-accent">
+        <a href={pageHref(page - 1)} class="link-accent" name="Previous page">
           {'< Prev'}
         </a>
       ) : (
@@ -39,7 +39,7 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1).slice(
         target === page ? (
           <span style="color:var(--color-fg)">{target}</span>
         ) : (
-          <a href={pageHref(target)} class="link-muted">
+          <a href={pageHref(target)} class="link-muted" name={`Page ${target}`}>
             {target}
           </a>
         ),
@@ -48,7 +48,7 @@ const pages = Array.from({ length: totalPages }, (_, index) => index + 1).slice(
       {totalPages > 5 && <span style="color:var(--color-border-bold)">...</span>}
 
       {page < totalPages ? (
-        <a href={pageHref(page + 1)} class="link-accent">
+        <a href={pageHref(page + 1)} class="link-accent" name="Next page">
           {'Next >'}
         </a>
       ) : (

@@ -4,6 +4,8 @@ import Pagination from '@/components/Pagination.astro';
 import StoryRow from '@/components/StoryRow.astro';
 import { getArticlesRequest } from '@/requests/get-articles.request';
 import { getCategoriesRequest } from '@/requests/get-categories.request';
+import { buildCategoryJsonLdService } from '@/services/build-json-ld.service';
+import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
 
 const { category: slug } = Astro.params;
 const page = Number(Astro.url.searchParams.get('page') ?? '1');
@@ -17,9 +19,12 @@ if (!category) {
 
 const articles = await getArticlesRequest({ category: category.slug, page, limit: 12 });
 const categoryIntro = `The latest reporting, analysis and developments in ${category.name}.`;
+const siteOrigin = resolveSiteOriginService(Astro.url, import.meta.env.PUBLIC_SITE_URL);
+const canonicalUrl = new URL(Astro.url.pathname, siteOrigin).toString();
+const jsonLd = buildCategoryJsonLdService(siteOrigin, category, canonicalUrl, categoryIntro);
 ---
 
-<BaseLayout description={`Stories in ${category.name}`} title={`${category.name} - Full Story`}>
+<BaseLayout description={`Stories in ${category.name}`} jsonLd={jsonLd} title={`${category.name} - Full Story`}>
   <div class="container mx-auto px-4 py-10 sm:px-5 md:py-14">
     <header class="mb-6 border-b pb-6" style="border-bottom-width:var(--border-width);border-color:var(--color-border-bold)">
       <p

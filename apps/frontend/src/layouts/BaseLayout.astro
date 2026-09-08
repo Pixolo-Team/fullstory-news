@@ -2,6 +2,8 @@
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import { getCategoriesRequest } from '@/requests/get-categories.request';
+import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
+import type { JsonLdData } from '@/services/build-json-ld.service';
 import '@/styles/global.css';
 
 /** Loaded only in production so local dev and preview traffic never reaches Analytics. */
@@ -25,27 +27,18 @@ interface Props {
   noindex?: boolean;
   /** Present only for a Story page; switches the page to og:type "article". */
   article?: ArticleMetaData;
+  /** Page-specific schema.org JSON-LD. Rendered at the end of the body. */
+  jsonLd?: JsonLdData;
 }
 
-const { title, description, image, noindex = false, article } = Astro.props;
+const { title, description, image, noindex = false, article, jsonLd } = Astro.props;
 
 // Categories drive both the header nav and the footer, so they are fetched
 // once here rather than in each component.
 const categories = await getCategoriesRequest();
 
 const siteName = 'Full Story';
-const configuredSiteUrl = import.meta.env.PUBLIC_SITE_URL;
-const requestOrigin = Astro.url.origin;
-const configuredOrigin = configuredSiteUrl ? new URL(configuredSiteUrl).origin : null;
-const configuredHost = configuredOrigin ? new URL(configuredOrigin).hostname : '';
-const requestHost = new URL(requestOrigin).hostname;
-const localHosts = ['localhost', '127.0.0.1', '::1'];
-const siteOrigin =
-  configuredOrigin && !localHosts.includes(configuredHost)
-    ? configuredOrigin
-    : localHosts.includes(requestHost)
-      ? 'https://www.fullstorynews.com'
-      : requestOrigin;
+const siteOrigin = resolveSiteOriginService(Astro.url, import.meta.env.PUBLIC_SITE_URL);
 
 // Astro.url is not trustworthy for telling production apart from local dev
 // on this deployment (see the long comment where this is used, further
@@ -57,32 +50,6 @@ const isProductionHost = Astro.request.headers.get('host') === 'www.fullstorynew
 const canonicalUrl = new URL(Astro.url.pathname, siteOrigin).toString();
 const imageUrl = new URL(image ?? '/og-default.png', siteOrigin).toString();
 
-const structuredData = article
-  ? {
-      '@context': 'https://schema.org',
-      '@type': 'NewsArticle',
-      headline: title,
-      description,
-      image: [imageUrl],
-      datePublished: article.publishedTime,
-      dateModified: article.modifiedTime ?? article.publishedTime,
-      author: [{ '@type': 'Person', name: article.author }],
-      publisher: {
-        '@type': 'Organization',
-        name: siteName,
-        logo: { '@type': 'ImageObject', url: `${siteOrigin}/favicon-512.png` },
-      },
-      articleSection: article.section,
-      keywords: article.tags?.join(', '),
-      mainEntityOfPage: { '@type': 'WebPage', '@id': canonicalUrl },
-    }
-  : {
-      '@context': 'https://schema.org',
-      '@type': 'NewsMediaOrganization',
-      name: siteName,
-      url: siteOrigin,
-      logo: `${siteOrigin}/favicon-512.png`,
-    };
 ---
 
 <!doctype html>
@@ -126,7 +93,6 @@ const structuredData = article
     {description && <meta name="twitter:description" content={description} />}
     <meta name="twitter:image" content={imageUrl} />
 
-    <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     {
       // gtag's default config call fires a page_view on every full page
       // load - all this site does, since navigation here is never a
@@ -503,6 +469,8 @@ const structuredData = article
 
       <Footer categories={categories} />
     </div>
+
+    {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
 
     <script>
       // Theme is a per-reader preference, restored before paint where possible

@@ -3,7 +3,9 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import SectionHeading from '@/components/SectionHeading.astro';
 import StoryCard from '@/components/StoryCard.astro';
 import { buildStoryPathService } from '@/services/build-story-path.service';
+import { buildHomeJsonLdService } from '@/services/build-json-ld.service';
 import { formatDateService } from '@/services/format-date.service';
+import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
 import {
   getArticlesByCategoryRequest,
   getLatestArticlesRequest,
@@ -29,10 +31,13 @@ const trendingStories = trending
 const trendingLead = trendingStories[0];
 const trendingRightColumn = trendingStories.slice(1, 4);
 const trendingBottomRow = trendingStories.slice(4, 6);
+const siteOrigin = resolveSiteOriginService(Astro.url, import.meta.env.PUBLIC_SITE_URL);
+const jsonLd = buildHomeJsonLdService(siteOrigin, 'Full Story');
 ---
 
 <BaseLayout
   description="Simple journalism, reported daily and readable without an account."
+  jsonLd={jsonLd}
   title="Full Story"
 >
   <div class="container mx-auto px-4 py-10 sm:px-5 md:py-14">
@@ -122,7 +127,7 @@ const trendingBottomRow = trendingStories.slice(4, 6);
                     class="m-0 text-balance text-[clamp(1.25rem,6vw,1.55rem)] font-medium leading-[1.18]"
                     style="font-family:var(--font-display);letter-spacing:var(--tracking-title)"
                   >
-                    <a class="story-link" href={buildStoryPathService(article)}>
+                    <a class="story-link" href={buildStoryPathService(article)} name={article.headline}>
                       {article.headline}
                     </a>
                   </h3>
@@ -145,10 +150,12 @@ const trendingBottomRow = trendingStories.slice(4, 6);
                       class="block no-underline sm:order-1 sm:justify-self-end md:order-none md:justify-self-end"
                       data-thumb
                       href={buildStoryPathService(article)}
+                      name={article.headline}
                     >
                       <img
-                        alt=""
+                        alt={article.headline}
                         class="block aspect-[4/3] w-full rounded-sm border object-cover sm:w-40 md:max-w-[11rem]"
+                        decoding="async"
                         loading="lazy"
                         src={article.heroImageUrl}
                         style="border-width:var(--border-width);border-color:var(--color-border)"
