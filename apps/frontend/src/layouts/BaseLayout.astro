@@ -1,13 +1,11 @@
 ---
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
+import CookieBanner from '@/components/CookieBanner.astro';
 import { getCategoriesRequest } from '@/requests/get-categories.request';
 import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
 import type { JsonLdData } from '@/services/build-json-ld.service';
 import '@/styles/global.css';
-
-/** Loaded only in production so local dev and preview traffic never reaches Analytics. */
-const GA_MEASUREMENT_ID = 'G-3FMBG1EGMQ';
 
 /** Structured data for a Story page's `article` prop. */
 interface ArticleMetaData {
@@ -39,11 +37,6 @@ const categories = await getCategoriesRequest();
 
 const siteName = 'Full Story';
 const siteOrigin = resolveSiteOriginService(Astro.url, import.meta.env.PUBLIC_SITE_URL);
-
-// Astro.url is not trustworthy for telling production apart from local dev
-// on this deployment (see the long comment where this is used, further
-// down) - the raw Host header is read directly instead.
-const isProductionHost = Astro.request.headers.get('host') === 'www.fullstorynews.com';
 
 // Canonical drops query strings (page=, q=) so paginated and searched views
 // of the same page do not read as separate URLs to a crawler.
@@ -93,40 +86,10 @@ const imageUrl = new URL(image ?? '/og-default.png', siteOrigin).toString();
     {description && <meta name="twitter:description" content={description} />}
     <meta name="twitter:image" content={imageUrl} />
 
-    {
-      // gtag's default config call fires a page_view on every full page
-      // load - all this site does, since navigation here is never a
-      // client-side route change - so no separate page-view call is needed
-      // per page.
-      //
-      // Gated on isProductionHost, read straight from the request's own Host
-      // header - not Astro.url, which resolves to "localhost" on every
-      // request on this Vercel deployment, in production included, not only
-      // in API routes as first assumed. siteOrigin (used for canonical/OG
-      // elsewhere in this file) only reads correct in production by
-      // accident: PUBLIC_SITE_URL is unset there, so it falls through to a
-      // hardcoded 'https://www.fullstorynews.com' whenever Astro.url looks
-      // local - which, it turns out, is every request. Confirmed by
-      // shipping temporary debug meta tags and reading them back live
-      // rather than assuming: Astro.url.hostname reads "localhost" in
-      // production, the raw Host header correctly reads
-      // "www.fullstorynews.com". import.meta.env.PROD was tried and
-      // rejected first too: verified it built as false in this SSR
-      // adapter's server bundle even from a genuine `astro build`.
-      isProductionHost && (
-        <>
-          <script async is:inline src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
-          <script is:inline define:vars={{ GA_MEASUREMENT_ID }}>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-              dataLayer.push(arguments);
-            }
-            gtag('js', new Date());
-            gtag('config', GA_MEASUREMENT_ID);
-          </script>
-        </>
-      )
-    }
+    <!-- Analytics loads only after the reader accepts cookies (see CookieBanner,
+      which injects gtag on Accept, production host only). Nothing
+      tracking-related is rendered here, so Reject - or no choice yet - means
+      zero third-party requests. -->
 
     <link rel="preconnect" href="/" />
     <script is:inline>
@@ -468,6 +431,7 @@ const imageUrl = new URL(image ?? '/og-default.png', siteOrigin).toString();
       </main>
 
       <Footer categories={categories} />
+      <CookieBanner />
     </div>
 
     {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
