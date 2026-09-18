@@ -9,7 +9,7 @@
 >
   <div class="container mx-auto px-4 py-4 sm:px-5">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <p style="margin:0;font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);max-width:44rem">
+      <p data-cookie-text style="margin:0;font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);max-width:44rem">
         We use cookies to understand how readers use Full Story. Accept for analytics cookies, or reject
         to read without them. <a class="link-accent" href="/cookie-policy">Cookie Policy</a>
       </p>
@@ -32,6 +32,18 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* The banner covers a phone screen at body size, so the text steps down
+     to the small-text token on mobile. The buttons keep their 44px tap
+     targets. `!important` beats the inline font-size above, the same
+     pattern BaseLayout uses for its mobile overrides. */
+  @media (max-width: 640px) {
+    [data-cookie-banner] [data-cookie-text] {
+      font-size: var(--text-meta) !important;
+    }
+  }
+</style>
 
 <script>
   import {
