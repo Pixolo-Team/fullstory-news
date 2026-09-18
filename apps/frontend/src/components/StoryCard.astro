@@ -24,7 +24,7 @@ const imageSizeClassName =
   imageClassName ?? (size === 'large' ? 'aspect-[16/9] xl:aspect-[16/7]' : 'aspect-[3/2]');
 ---
 
-<article class:list={['flex flex-col gap-3', wrapperClassName]}>
+<article class:list={['flex flex-col gap-3', wrapperClassName]} data-story-card>
   {
     article.heroImageUrl && (
       <a class="block no-underline" data-thumb href={href} name={article.headline}>
@@ -57,12 +57,29 @@ const imageSizeClassName =
     size === 'large' && article.subHeadline && (
       <p
         class="m-0 max-w-[58ch] text-pretty"
+        data-story-subheadline
         style="font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted)"
       >
         {article.subHeadline}
       </p>
     )
   }
+
+  <style>
+    /* Phones stack title, subtitle and kicker with breathing room to spare,
+       so the card gap steps down from 12px to 10px and the subtitle sets
+       tighter. `!important` beats the Tailwind gap class and the inline
+       line-height, the same pattern BaseLayout uses for mobile overrides. */
+    @media (max-width: 640px) {
+      [data-story-card] {
+        gap: 0.625rem !important;
+      }
+
+      [data-story-card] [data-story-subheadline] {
+        line-height: var(--leading-meta) !important;
+      }
+    }
+  </style>
 
   <p class="remarque-entry-kicker m-0">
     {showSection && <span class="remarque-entry-section">{article.category.name}</span>}
