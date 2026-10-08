@@ -30,6 +30,21 @@ export interface AuthorData {
   avatarUrl?: string | null;
 }
 
+/** Author profile shown on a byline page. Never carries an email address. */
+export interface AuthorProfileData {
+  id: string;
+  slug: string;
+  name: string;
+  avatarUrl: string | null;
+  bio: string | null;
+}
+
+/** An author profile together with that author's published Stories. */
+export interface AuthorPageData {
+  author: AuthorProfileData;
+  stories: ArticleData[];
+}
+
 /** Article as returned by list endpoints. Never carries contentHtml. */
 export interface ArticleData {
   id: string;

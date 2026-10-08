@@ -6,6 +6,7 @@ import { SupabaseModule } from '@/config/supabase.module.js';
 import { AdminModule } from '@/modules/admin/admin.module.js';
 import { ArticlesModule } from '@/modules/articles/articles.module.js';
 import { AuthModule } from '@/modules/auth/auth.module.js';
+import { AuthorsModule } from '@/modules/authors/authors.module.js';
 import { CategoriesModule } from '@/modules/categories/categories.module.js';
 import { HealthModule } from '@/modules/health/health.module.js';
 import { MediaModule } from '@/modules/media/media.module.js';
@@ -29,6 +30,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
     SupabaseModule,
     AuthModule,
+    AuthorsModule,
     CategoriesModule,
     ArticlesModule,
     SearchModule,

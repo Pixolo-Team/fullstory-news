@@ -12,3 +12,6 @@ export const TRENDING_WINDOW_DAYS = 7;
 
 /** Number of items the trending section is filled to. */
 export const TRENDING_DEFAULT_LIMIT = 6;
+
+/** Maximum Stories listed on an author's byline page. */
+export const AUTHOR_STORIES_LIMIT = 24;

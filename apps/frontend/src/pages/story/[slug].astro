@@ -6,6 +6,7 @@ import InstagramEmbed from '@/components/InstagramEmbed.astro';
 import { getArticleRequest } from '@/requests/get-article.request';
 import { getSimilarArticlesRequest } from '@/requests/get-articles.request';
 import { formatDateService } from '@/services/format-date.service';
+import { buildAuthorPathService } from '@/services/build-author-path.service';
 import { buildInstagramPermalinkService } from '@/services/build-instagram-permalink.service';
 import { buildStoryJsonLdService } from '@/services/build-json-ld.service';
 import { resolveSiteOriginService } from '@/services/resolve-site-origin.service';
@@ -107,7 +108,7 @@ const jsonLd = buildStoryJsonLdService(shareOrigin, 'Full Story', article, share
       }
 
       <p class="remarque-post-kicker mt-5">
-        <span>By {article.author.name}</span>
+        <span>By <a class="story-link" href={buildAuthorPathService(article.author.name)}>{article.author.name}</a></span>
         <span class="remarque-dot" aria-hidden="true">&middot;</span>
         <span>{formatDateService(article.publishedAt)}</span>
       </p>
@@ -153,7 +154,7 @@ const jsonLd = buildStoryJsonLdService(shareOrigin, 'Full Story', article, share
     }
 
     {
-      embeddableReels.length > 0 && (
+      article.instagramPosts.length > 0 && (
         <section class="mt-9 border-t pt-6" style="border-top-width:var(--border-width);border-color:var(--color-border)">
           <p class="text-label mb-5 mt-0">
             Related Videos

@@ -1,0 +1,103 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import StoryRow from '@/components/StoryRow.astro';
+import { getAuthorRequest } from '@/requests/get-author.request';
+import {
+  buildAuthorBioService,
+  buildAuthorMetaDescriptionService,
+} from '@/services/build-author-bio.service';
+
+const { slug } = Astro.params;
+
+const page = await getAuthorRequest(slug ?? '');
+
+if (!page) {
+  return Astro.redirect('/404', 404);
+}
+
+const { author, stories } = page;
+
+// A bio saved against the author wins; the shared copy is the fallback, so an
+// empty column reads as "not written yet" rather than overwriting everyone
+// with the same paragraph.
+const bio = author.bio ?? buildAuthorBioService(author.name);
+const initials = author.name
+  .split(' ')
+  .filter((part) => part.length > 0)
+  .slice(0, 2)
+  .map((part) => part[0])
+  .join('');
+---
+
+<BaseLayout
+  description={buildAuthorMetaDescriptionService(author.name)}
+  title={`${author.name} - Full Story`}
+>
+  <div class="container mx-auto px-4 py-10 sm:px-5 md:py-14">
+    <header
+      class="mb-6 border-b pb-6"
+      style="border-bottom-width:var(--border-width);border-color:var(--color-border-bold)"
+    >
+      <p
+        class="m-0"
+        style="font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-fg-muted)"
+      >
+        Author
+      </p>
+
+      <div class="mt-3 flex items-start gap-5">
+        {
+          author.avatarUrl ? (
+            <img
+              alt=""
+              class="h-16 w-16 shrink-0 rounded-full border object-cover"
+              src={author.avatarUrl}
+              style="border-width:var(--border-width);border-color:var(--color-border)"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border"
+              style="border-width:var(--border-width);border-color:var(--color-border);background:var(--color-surface);font-family:var(--font-display);font-size:1.25rem;color:var(--color-fg-muted)"
+            >
+              {initials}
+            </span>
+          )
+        }
+
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <h1 class="text-title m-0">{author.name}</h1>
+            <p
+              class="m-0"
+              style="font-family:var(--font-mono);font-size:var(--text-meta);letter-spacing:var(--tracking-meta);color:var(--color-fg-muted)"
+            >
+              {stories.length} {stories.length === 1 ? 'Story' : 'Stories'}
+            </p>
+          </div>
+
+          <p
+            class="m-0 mt-3 max-w-[38rem] text-pretty"
+            style="font-family:var(--font-body);font-size:var(--text-body-lg);line-height:var(--leading-body);color:var(--color-fg-muted)"
+          >
+            {bio}
+          </p>
+        </div>
+      </div>
+    </header>
+
+    {
+      stories.length === 0 ? (
+        <p class="text-body m-0" style="color:var(--color-muted)">
+          No published Stories yet.
+        </p>
+      ) : (
+        <section>
+          {stories.map((article) => (
+            <StoryRow article={article} />
+          ))}
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>

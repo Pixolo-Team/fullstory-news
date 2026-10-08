@@ -48,6 +48,11 @@ const isProductionHost = Astro.request.headers.get('host') === 'www.fullstorynew
 // Canonical drops query strings (page=, q=) so paginated and searched views
 // of the same page do not read as separate URLs to a crawler.
 const canonicalUrl = new URL(Astro.url.pathname, siteOrigin).toString();
+
+// Search Console's "HTML tag" method. Unset is the normal state once the
+// domain is verified over DNS, so the tag is omitted rather than empty -
+// Google treats an empty content attribute as a failed verification.
+const googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
 const imageUrl = new URL(image ?? '/og-default.png', siteOrigin).toString();
 
 ---
@@ -61,6 +66,11 @@ const imageUrl = new URL(image ?? '/og-default.png', siteOrigin).toString();
     {description && <meta name="description" content={description} />}
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonicalUrl} />
+    {
+      googleSiteVerification && (
+        <meta name="google-site-verification" content={googleSiteVerification} />
+      )
+    }
     <meta name="theme-color" content="#1a4fd6" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

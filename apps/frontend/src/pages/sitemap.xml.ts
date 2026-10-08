@@ -4,6 +4,7 @@ import type { APIRoute } from 'astro';
 // SERVICES //
 import { sendBackendRequest } from '@/requests/backend.request';
 import { getCategoriesRequest } from '@/requests/get-categories.request';
+import { getAuthorsRequest } from '@/requests/get-author.request';
 
 interface SitemapArticleData {
   slug: string;
@@ -11,7 +12,16 @@ interface SitemapArticleData {
   updatedAt: string;
 }
 
-const STATIC_PATHS = ['/', '/search', '/privacy-policy', '/terms', '/grievance'];
+const STATIC_PATHS = [
+  '/',
+  '/search',
+  '/about',
+  '/contact',
+  '/editorial-policy',
+  '/privacy-policy',
+  '/terms',
+  '/grievance',
+];
 
 /** Stories are paginated at the backend's page size; walk every page. */
 const PAGE_SIZE = 100;
@@ -87,14 +97,16 @@ export const GET: APIRoute = async ({ url }) => {
         ? 'https://www.fullstorynews.com'
         : url.origin;
 
-  const [categories, articles] = await Promise.all([
+  const [categories, authors, articles] = await Promise.all([
     getCategoriesRequest(),
+    getAuthorsRequest(),
     fetchAllPublishedArticles(),
   ]);
 
   const urls = [
     ...STATIC_PATHS.map((path) => ({ loc: `${origin}${path}`, lastmod: undefined })),
     ...categories.map((category) => ({ loc: `${origin}/${category.slug}`, lastmod: undefined })),
+    ...authors.map((author) => ({ loc: `${origin}/author/${author.slug}`, lastmod: undefined })),
     ...articles.map((article) => ({
       loc: `${origin}/story/${article.slug}`,
       lastmod: article.updatedAt,

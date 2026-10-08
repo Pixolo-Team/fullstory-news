@@ -461,6 +461,31 @@ export class ArticlesRepository {
   }
 
   /**
+   * Reads published articles written by one author, newest first.
+   * @param authorId - Author id
+   * @param limit - Max rows to return
+   * @returns Published article list items for the author's archive
+   */
+  async findArticlesByAuthorIdRepository(authorId: string, limit: number): Promise<ArticleListItemData[]> {
+    const { data, error } = await this.supabase
+      .from('articles')
+      .select(
+        'id, headline, sub_headline, slug, status, hero_image_url, tags, view_count, published_at, updated_at, category:categories!inner(id, name, slug), author:authors!inner(id, name)',
+      )
+      .eq('author_id', authorId)
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(limit)
+      .returns<ArticleRowData[]>();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return (data ?? []).map((row) => this.mapArticleListItem(row));
+  }
+
+  /**
    * Reads recently published articles, newest first, excluding given ids.
    *
    * Backfills the trending section when too few articles have been viewed
