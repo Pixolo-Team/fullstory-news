@@ -126,4 +126,21 @@ export const STATIC_PAGES: Record<string, StaticPageData> = {
       <p>Receipt is acknowledged within forty-eight hours. A substantive response follows within fifteen working days. Where a correction is warranted it is appended to the Story, dated, and never applied silently.</p>
     `,
   },
+
+  'cookie-policy': {
+    slug: 'cookie-policy',
+    title: 'Cookie Policy',
+    intro:
+      'Fullstory reads fine without cookies. This page describes the one choice the banner asks you for.',
+    contentHtml: `
+      <h2>What the banner asks</h2>
+      <p>On your first visit a banner asks you to Accept or Reject cookies. Accept loads Google Analytics so visits can be counted in aggregate. Reject means no analytics script loads and no third-party request is made for it.</p>
+      <h2>What is stored on your device</h2>
+      <p>Your choice itself is remembered in your browser's local storage, alongside your light or dark theme preference. Neither is sent anywhere; both exist only so the site does not ask you again on every page.</p>
+      <h2>Changing your mind</h2>
+      <p>Clear this site's data in your browser settings to see the banner again and make a different choice.</p>
+      <h2>Contact</h2>
+      <p>Write to the officer named on the Grievance page. A response is due within fifteen working days of receipt.</p>
+    `,
+  },
 };

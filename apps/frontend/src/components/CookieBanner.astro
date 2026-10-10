@@ -1,0 +1,129 @@
+<div
+  class="fixed inset-x-0 bottom-0"
+  data-cookie-banner
+  hidden
+  role="dialog"
+  aria-label="Cookie consent"
+  aria-live="polite"
+  style="z-index:var(--z-toast);background:var(--color-bg);border-top:var(--border-width) solid var(--color-border)"
+>
+  <div class="container mx-auto px-4 py-4 sm:px-5">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p data-cookie-text style="margin:0;font-size:var(--text-body);line-height:var(--leading-body);color:var(--color-fg-muted);max-width:44rem">
+        We use cookies to understand how readers use Full Story. Accept for analytics cookies, or reject
+        to read without them. <a class="link-accent" href="/cookie-policy">Cookie Policy</a>
+      </p>
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <button
+          class="remarque-button"
+          data-cookie-reject
+          type="button"
+        >
+          Reject
+        </button>
+        <button
+          class="remarque-button remarque-button--primary"
+          data-cookie-accept
+          type="button"
+        >
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* The banner covers a phone screen at body size, so the text steps down
+     to the small-text token on mobile. The buttons keep their 44px tap
+     targets. `!important` beats the inline font-size above, the same
+     pattern BaseLayout uses for its mobile overrides. */
+  @media (max-width: 640px) {
+    [data-cookie-banner] [data-cookie-text] {
+      font-size: var(--text-meta) !important;
+    }
+  }
+</style>
+
+<script>
+  import {
+    COOKIE_CONSENT_ACCEPTED,
+    COOKIE_CONSENT_REJECTED,
+    COOKIE_CONSENT_STORAGE_KEY,
+    GA_MEASUREMENT_ID,
+    PRODUCTION_HOST,
+  } from '@/constants/cookie-consent';
+
+  // Consent is a per-reader choice, stored locally like the theme preference.
+  // Analytics loads only after an explicit Accept, and only on production.
+  const banner = document.querySelector('[data-cookie-banner]');
+  const acceptButton = document.querySelector('[data-cookie-accept]');
+  const rejectButton = document.querySelector('[data-cookie-reject]');
+
+  function readConsent(): string | null {
+    try {
+      return localStorage.getItem(COOKIE_CONSENT_STORAGE_KEY);
+    } catch {
+      // Private browsing can throw on read; treat as undecided.
+      return null;
+    }
+  }
+
+  function writeConsent(value: string): void {
+    try {
+      localStorage.setItem(COOKIE_CONSENT_STORAGE_KEY, value);
+    } catch {
+      // Preference simply will not persist.
+    }
+  }
+
+  function loadAnalytics(): void {
+    if (window.location.host !== PRODUCTION_HOST) return;
+    if (document.querySelector('script[data-ga]')) return;
+
+    const loader = document.createElement('script');
+    loader.async = true;
+    loader.dataset.ga = 'true';
+    loader.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(loader);
+
+    const w = window as unknown as {
+      dataLayer?: unknown[];
+      gtag?: (...args: unknown[]) => void;
+    };
+    w.dataLayer = w.dataLayer || [];
+    w.gtag =
+      w.gtag ||
+      function gtag(...args: unknown[]): void {
+        (w.dataLayer as unknown[]).push(args);
+      };
+    w.gtag('js', new Date());
+    w.gtag('config', GA_MEASUREMENT_ID);
+  }
+
+  function hideBanner(): void {
+    banner?.setAttribute('hidden', '');
+  }
+
+  function showBanner(): void {
+    banner?.removeAttribute('hidden');
+  }
+
+  const stored = readConsent();
+  if (stored === COOKIE_CONSENT_ACCEPTED) {
+    loadAnalytics();
+  } else if (stored !== COOKIE_CONSENT_REJECTED) {
+    showBanner();
+  }
+
+  acceptButton?.addEventListener('click', () => {
+    writeConsent(COOKIE_CONSENT_ACCEPTED);
+    hideBanner();
+    loadAnalytics();
+  });
+
+  rejectButton?.addEventListener('click', () => {
+    writeConsent(COOKIE_CONSENT_REJECTED);
+    hideBanner();
+  });
+</script>

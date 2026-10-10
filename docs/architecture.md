@@ -63,6 +63,7 @@ Routes:
 | `/story/[slug]/[id]` | Story              | API                   |
 | `/search`            | Search             | API                   |
 | `/privacy-policy`    | Privacy Policy     | static, in this repo  |
+| `/cookie-policy`     | Cookie Policy      | static, in this repo  |
 | `/terms`             | Terms & Conditions | static, in this repo  |
 | `/grievance`         | Grievance          | static, in this repo  |
 

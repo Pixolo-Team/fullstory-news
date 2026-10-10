@@ -301,6 +301,7 @@ Create a folder when you have something to put in it.
 | `/story/[slug]/[id]` | Story | API |
 | `/search` | Search | API |
 | `/privacy-policy` | Privacy Policy | this repo |
+| `/cookie-policy` | Cookie Policy | this repo |
 | `/terms` | Terms & Conditions | this repo |
 | `/grievance` | Grievance | this repo |
 
